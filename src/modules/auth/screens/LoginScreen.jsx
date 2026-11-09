@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '../../../components/button/Button';
-import { lightTheme } from '../../../styles/theme';
+import { lightTheme, spacing } from '../../../styles/theme';
 import useAuthModule from '../hooks/useAuthModule';
 
 const LoginScreen = () => {
@@ -10,6 +10,9 @@ const LoginScreen = () => {
   const { login, loading, error } = useAuthModule();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const passwordRef = useRef(null);
 
   const handleLogin = () => {
     if (!email.trim() || !password.trim()) return;
@@ -32,24 +35,42 @@ const LoginScreen = () => {
 
           {error && <Text style={styles.error}>{error}</Text>}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Correo electrónico"
-            placeholderTextColor={lightTheme.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.inputFlex}
+              placeholder="Correo electrónico"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            {email.length > 0 && (
+              <TouchableOpacity onPress={() => setEmail('')} style={styles.inputAction}>
+                <Text style={styles.clearIcon}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor={lightTheme.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              ref={passwordRef}
+              style={styles.inputFlex}
+              placeholder="Contraseña"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputAction}>
+              <Text style={styles.toggleIcon}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+            </TouchableOpacity>
+          </View>
 
           <Button
             title="Iniciar Sesión"
@@ -100,14 +121,32 @@ const styles = StyleSheet.create({
     color: lightTheme.textPrimary,
     marginBottom: 8,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: lightTheme.border,
     borderRadius: 10,
+    backgroundColor: lightTheme.surface,
+  },
+  inputFlex: {
+    flex: 1,
     padding: 14,
     fontSize: 16,
     color: lightTheme.textPrimary,
-    backgroundColor: lightTheme.surface,
+  },
+  inputAction: {
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: spacing.sm,
+  },
+  clearIcon: {
+    fontSize: 16,
+    color: lightTheme.textSecondary,
+  },
+  toggleIcon: {
+    fontSize: 13,
+    color: lightTheme.primary,
+    fontWeight: '600',
   },
   error: {
     color: lightTheme.accent,

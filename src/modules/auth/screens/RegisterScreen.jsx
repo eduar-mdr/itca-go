@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '../../../components/button/Button';
 import Dropdown from '../../../components/dropdown/Dropdown';
-import { lightTheme } from '../../../styles/theme';
+import { lightTheme, spacing } from '../../../styles/theme';
 import useAuthModule from '../hooks/useAuthModule';
 
 const ROLE_OPTIONS = [
@@ -17,9 +17,15 @@ const RegisterScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('student');
   const [studentId, setStudentId] = useState('');
   const [phone, setPhone] = useState('');
+
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const studentIdRef = useRef(null);
+  const phoneRef = useRef(null);
 
   const handleRegister = () => {
     if (!name.trim() || !email.trim() || !password.trim()) return;
@@ -51,9 +57,13 @@ const RegisterScreen = () => {
             placeholderTextColor={lightTheme.textSecondary}
             value={name}
             onChangeText={setName}
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <TextInput
+            ref={emailRef}
             style={styles.input}
             placeholder="Correo electrónico"
             placeholderTextColor={lightTheme.textSecondary}
@@ -61,16 +71,28 @@ const RegisterScreen = () => {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor={lightTheme.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              ref={passwordRef}
+              style={styles.inputFlex}
+              placeholder="Contraseña"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              returnKeyType="next"
+              onSubmitEditing={() => studentIdRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputAction}>
+              <Text style={styles.toggleIcon}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+            </TouchableOpacity>
+          </View>
 
           <Dropdown
             label="Rol"
@@ -80,20 +102,27 @@ const RegisterScreen = () => {
           />
 
           <TextInput
+            ref={studentIdRef}
             style={styles.input}
             placeholder="Carnet estudiantil (opcional)"
             placeholderTextColor={lightTheme.textSecondary}
             value={studentId}
             onChangeText={setStudentId}
+            returnKeyType="next"
+            onSubmitEditing={() => phoneRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <TextInput
+            ref={phoneRef}
             style={styles.input}
             placeholder="Teléfono (opcional)"
             placeholderTextColor={lightTheme.textSecondary}
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
+            returnKeyType="done"
+            onSubmitEditing={handleRegister}
           />
 
           <Button
@@ -147,6 +176,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: lightTheme.textPrimary,
     backgroundColor: lightTheme.surface,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: lightTheme.border,
+    borderRadius: 10,
+    backgroundColor: lightTheme.surface,
+  },
+  inputFlex: {
+    flex: 1,
+    padding: 14,
+    fontSize: 16,
+    color: lightTheme.textPrimary,
+  },
+  inputAction: {
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: spacing.sm,
+  },
+  toggleIcon: {
+    fontSize: 13,
+    color: lightTheme.primary,
+    fontWeight: '600',
   },
   error: {
     color: lightTheme.accent,

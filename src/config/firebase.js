@@ -3,15 +3,14 @@ import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { getDatabase } from 'firebase/database';
 
-// Reemplazar con los valores reales de Firebase Console > Project Settings
 const firebaseConfig = {
-  apiKey: 'TU_API_KEY',
-  authDomain: 'itca-go.firebaseapp.com',
-  projectId: 'itca-go',
-  storageBucket: 'itca-go.firebasestorage.app',
-  messagingSenderId: 'TU_MESSAGING_SENDER_ID',
-  appId: 'TU_APP_ID',
-  databaseURL: 'https://itca-go-default-rtdb.firebaseio.com',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
 const app = initializeApp(firebaseConfig);

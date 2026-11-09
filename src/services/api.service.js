@@ -2,9 +2,8 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { auth } from '../config/firebase';
 
-const BASE_URL = Platform.OS === 'android'
-  ? 'http://10.0.2.2:3000/api'
-  : 'http://localhost:3000/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL
+  || (Platform.OS === 'android' ? 'http://192.168.1.200:3000/api' : 'http://localhost:3000/api');
 
 const api = axios.create({
   baseURL: BASE_URL,

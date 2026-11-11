@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet, ScrollView, Text } from 'react-native';
 import Dialog from '../../../components/dialog/Dialog';
 import Button from '../../../components/button/Button';
@@ -30,6 +30,9 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
   const [routeDestLocation, setRouteDestLocation] = useState(null);
   const [routeSchedule, setRouteSchedule] = useState([]);
 
+  const tripPriceRef = useRef(null);
+  const routeDescRef = useRef(null);
+
   const resetForm = () => {
     setOriginLocation(null);
     setDestinationLocation(null);
@@ -44,8 +47,11 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
     setPubType('trip');
   };
 
+  const isTripValid = originLocation && destinationLocation && departureTime && totalSeats.trim();
+  const isRouteValid = routeName.trim() && routeOriginLocation && routeDestLocation && routeSchedule.length > 0;
+
   const handleSubmitTrip = async () => {
-    if (!originLocation || !destinationLocation || !departureTime || !totalSeats.trim()) return;
+    if (!isTripValid) return;
     const success = await createTrip({
       origin: originLocation.address,
       destination: destinationLocation.address,
@@ -59,7 +65,7 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
   };
 
   const handleSubmitRoute = async () => {
-    if (!routeName.trim() || !routeOriginLocation || !routeDestLocation) return;
+    if (!isRouteValid) return;
     const success = await createRoute({
       name: routeName.trim(),
       description: routeDesc.trim(),
@@ -95,18 +101,56 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
             <LocationPicker label="Seleccionar origen" value={originLocation} onChange={setOriginLocation} />
             <LocationPicker label="Seleccionar destino" value={destinationLocation} onChange={setDestinationLocation} />
             <DateTimePicker label="Fecha y hora de salida" value={departureTime} onChange={setDepartureTime} mode="datetime" />
-            <TextInput style={styles.input} placeholder="Cupos disponibles" placeholderTextColor={lightTheme.textSecondary} value={totalSeats} onChangeText={setTotalSeats} keyboardType="numeric" />
-            <TextInput style={styles.input} placeholder="Precio simulado (opcional)" placeholderTextColor={lightTheme.textSecondary} value={simulatedPrice} onChangeText={setSimulatedPrice} keyboardType="decimal-pad" />
-            <Button title="Publicar Viaje" variant="cta" onPress={handleSubmitTrip} loading={loading} disabled={!originLocation || !destinationLocation || !departureTime || !totalSeats.trim()} />
+            <TextInput
+              style={styles.input}
+              placeholder="Cupos disponibles"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={totalSeats}
+              onChangeText={setTotalSeats}
+              keyboardType="numeric"
+              returnKeyType="next"
+              onSubmitEditing={() => tripPriceRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <TextInput
+              ref={tripPriceRef}
+              style={styles.input}
+              placeholder="Precio simulado (opcional)"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={simulatedPrice}
+              onChangeText={setSimulatedPrice}
+              keyboardType="decimal-pad"
+              returnKeyType="done"
+              onSubmitEditing={handleSubmitTrip}
+            />
+            <Button title="Publicar Viaje" variant="cta" onPress={handleSubmitTrip} loading={loading} disabled={!isTripValid} />
           </>
         ) : (
           <>
-            <TextInput style={styles.input} placeholder="Nombre de la ruta" placeholderTextColor={lightTheme.textSecondary} value={routeName} onChangeText={setRouteName} />
-            <TextInput style={styles.input} placeholder="Descripción" placeholderTextColor={lightTheme.textSecondary} value={routeDesc} onChangeText={setRouteDesc} multiline />
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre de la ruta"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={routeName}
+              onChangeText={setRouteName}
+              returnKeyType="next"
+              onSubmitEditing={() => routeDescRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <TextInput
+              ref={routeDescRef}
+              style={styles.input}
+              placeholder="Descripción"
+              placeholderTextColor={lightTheme.textSecondary}
+              value={routeDesc}
+              onChangeText={setRouteDesc}
+              returnKeyType="done"
+              multiline
+            />
             <LocationPicker label="Seleccionar origen de la ruta" value={routeOriginLocation} onChange={setRouteOriginLocation} />
             <LocationPicker label="Seleccionar destino de la ruta" value={routeDestLocation} onChange={setRouteDestLocation} />
             <SchedulePicker value={routeSchedule} onChange={setRouteSchedule} />
-            <Button title="Publicar Ruta" variant="primary" onPress={handleSubmitRoute} loading={loading} disabled={!routeName.trim() || !routeOriginLocation || !routeDestLocation} />
+            <Button title="Publicar Ruta" variant="primary" onPress={handleSubmitRoute} loading={loading} disabled={!isRouteValid} />
           </>
         )}
       </ScrollView>

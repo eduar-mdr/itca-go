@@ -41,8 +41,7 @@ export default function MapBackground({ routes = [], trips = [], userLocation, o
       })}
 
       {trips.map((trip) => {
-        const routeLocation = trip.route?.originLocation || trip.route?.currentLocation;
-        const coord = toLatLng(routeLocation);
+        const coord = toLatLng(trip.originLocation);
         if (!coord) return null;
         return (
           <Marker

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { spacing, borderRadius } from '../../styles/theme';
+import { lightTheme, spacing, borderRadius } from '../../styles/theme';
 
-export default function Card({ children, style, theme }) {
+export default function Card({ children, style, theme = lightTheme }) {
   return (
     <View style={[styles.container, { backgroundColor: theme.surface }, style]}>
       {children}

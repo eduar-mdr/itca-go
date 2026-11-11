@@ -1,18 +1,17 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { spacing, borderRadius, fontSize } from '../../styles/theme';
+import { lightTheme, spacing, borderRadius } from '../../styles/theme';
 
-export default function Chip({ label, active = false, icon, onPress, theme }) {
+export default function Chip({ label, active = false, icon, onPress, theme = lightTheme }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.75}
       style={[
         styles.container,
-        {
-          backgroundColor: active ? theme.primary : theme.surface,
-          borderColor: active ? theme.primary : theme.border,
-        },
+        active
+          ? { backgroundColor: theme.primary, borderColor: theme.primary }
+          : { backgroundColor: '#ffffff', borderColor: theme.border },
       ]}
     >
       {icon && <>{icon}</>}
@@ -33,15 +32,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.md,
+    justifyContent: 'center',
+    height: 36,
+    paddingHorizontal: 16,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    alignSelf: 'flex-start',
+    borderWidth: 1.5,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
   },
   label: {
-    fontSize: fontSize.sm,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   labelWithIcon: {
     marginLeft: spacing.xs,

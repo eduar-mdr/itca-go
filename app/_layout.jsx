@@ -40,6 +40,7 @@ const RootNavigator = () => {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="route-detail/[id]" options={{ headerShown: true, title: 'Detalle de Ruta' }} />
       <Stack.Screen name="trip-detail/[id]" options={{ headerShown: true, title: 'Detalle de Viaje' }} />
+      <Stack.Screen name="notifications" options={{ headerShown: true, title: 'Notificaciones' }} />
     </Stack>
   );
 };

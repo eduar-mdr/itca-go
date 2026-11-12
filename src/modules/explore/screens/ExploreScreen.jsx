@@ -7,6 +7,7 @@ import RouteFilterChips from '../components/RouteFilterChips';
 import RouteCard from '../components/RouteCard';
 import CreateTripModal from '../components/CreateTripModal';
 import useExploreRoutes from '../hooks/useExploreRoutes';
+import AppHeader from '../../../components/header/AppHeader';
 import useLocation from '../../../hooks/useLocation';
 import { lightTheme, spacing, fontSize } from '../../../styles/theme';
 
@@ -51,6 +52,16 @@ export default function ExploreScreen() {
           userLocation={location}
           onMarkerPress={handleCardPress}
         />
+        <View style={styles.headerOverlay}>
+          <AppHeader
+            title="ITCA Go"
+            transparent
+            titleInChip
+            chipBackground="#ffffff"
+            titleColor={lightTheme.accent}
+            onNotificationPress={() => router.push('/notifications')}
+          />
+        </View>
       </View>
 
       <RouteFilterChips activeFilter={filter} onFilterChange={setFilter} />
@@ -105,6 +116,14 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: '45%',
+    position: 'relative',
+  },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   list: {
     paddingTop: spacing.sm,

@@ -27,7 +27,7 @@ export default function TripDetailScreen() {
   const { theme } = useTheme();
   const { item, loading, error } = useRouteDetail(id, 'trip');
   const { comments, sendComment, loading: commentsLoading } = useComments(id, 'trip');
-  const { subscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'trip', item);
+  const { subscribe, unsubscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'trip', item);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const statusLabels = {
@@ -105,8 +105,10 @@ export default function TripDetailScreen() {
         type="trip"
         isSubscribed={isSubscribed}
         onSubscribe={subscribe}
+        onUnsubscribe={unsubscribe}
         loading={subLoading}
         availableSeats={item.availableSeats}
+        status={item.status}
         theme={theme}
       />
 

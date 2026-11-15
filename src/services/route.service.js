@@ -14,3 +14,5 @@ export const updateRouteLocation = (id, coordinates) =>
 export const deleteRoute = (id) => api.delete(`/routes/${id}`);
 
 export const subscribeToRoute = (id) => api.post(`/routes/${id}/subscribe`);
+
+export const unsubscribeFromRoute = (id) => api.post(`/routes/${id}/unsubscribe`);

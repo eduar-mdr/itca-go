@@ -51,5 +51,25 @@ export default function useSubscription(id, type, item) {
     }
   }, [id, type, item]);
 
-  return { subscribe, loading, error, isSubscribed };
+  const unsubscribe = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (type === 'route') {
+        await routeService.unsubscribeFromRoute(id);
+      } else {
+        await tripService.cancelRequest(id);
+      }
+
+      setLoading(false);
+      return true;
+    } catch (err) {
+      setError(err.message || 'Error al desuscribirse');
+      setLoading(false);
+      return false;
+    }
+  }, [id, type]);
+
+  return { subscribe, unsubscribe, loading, error, isSubscribed };
 }

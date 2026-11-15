@@ -18,7 +18,7 @@ export default function RouteDetailScreen() {
   const { theme } = useTheme();
   const { item, loading, error, realtimeLocation } = useRouteDetail(id, 'route');
   const { comments, sendComment, loading: commentsLoading } = useComments(id, 'route');
-  const { subscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'route', item);
+  const { subscribe, unsubscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'route', item);
   const [dialogVisible, setDialogVisible] = useState(false);
 
   if (loading || !item) {
@@ -80,6 +80,7 @@ export default function RouteDetailScreen() {
         type="route"
         isSubscribed={isSubscribed}
         onSubscribe={subscribe}
+        onUnsubscribe={unsubscribe}
         loading={subLoading}
         theme={theme}
       />

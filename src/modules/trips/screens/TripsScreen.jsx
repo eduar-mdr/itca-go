@@ -1,42 +1,102 @@
-import React from 'react';
-import { View, Text, SectionList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
 import RouteCard from '../../explore/components/RouteCard';
+import RouteManageCard from '../components/RouteManageCard';
+import EditRouteModal from '../components/EditRouteModal';
+import EditTripModal from '../components/EditTripModal';
 import AppHeader from '../../../components/header/AppHeader';
+import Chip from '../../../components/chip/Chip';
 import { useTheme } from '../../../context/ThemeContext';
 import useMyTrips from '../hooks/useMyTrips';
+import * as routeService from '../../../services/route.service';
+import * as tripService from '../../../services/trip.service';
 import { spacing, fontSize } from '../../../styles/theme';
-
-const EMPTY_ROUTES = 'No estás inscrito en ninguna ruta';
-const EMPTY_TRIPS = 'No tienes viajes activos';
 
 export default function TripsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
-  const { myTrips, myRoutes, loading, refresh } = useMyTrips();
+  const userRole = useSelector((s) => s.user.user?.role) || 'student';
+  const { createdRoutes, subscribedRoutes, createdTrips, subscribedTrips, loading, refresh } = useMyTrips();
 
-  const sections = [
-    {
-      title: 'Mis Rutas Inscritas',
-      data: myRoutes.map((r) => ({ ...r, _type: 'route' })),
-      emptyText: EMPTY_ROUTES,
-    },
-    {
-      title: 'Mis Viajes',
-      data: myTrips.map((t) => ({ ...t, _type: 'trip' })),
-      emptyText: EMPTY_TRIPS,
-    },
-  ];
+  const [activeTab, setActiveTab] = useState('institutional');
+  const [subFilter, setSubFilter] = useState('all');
+  const [editRoute, setEditRoute] = useState(null);
+  const [editTrip, setEditTrip] = useState(null);
 
-  const handlePress = (item) => {
-    if (item._type === 'route') {
-      router.push(`/route-detail/${item._id}`);
-    } else {
-      router.push(`/trip-detail/${item._id}`);
-    }
+  const handlePress = (item, type) => {
+    if (type === 'route') router.push(`/route-detail/${item._id}`);
+    else router.push(`/trip-detail/${item._id}`);
   };
 
-  if (loading && myTrips.length === 0 && myRoutes.length === 0) {
+  const handleToggleRouteActive = async (route) => {
+    Alert.alert(
+      route.active ? 'Desactivar ruta' : 'Activar ruta',
+      `¿${route.active ? 'Desactivar' : 'Activar'} "${route.name}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              await routeService.updateRoute(route._id, { active: !route.active });
+              refresh();
+            } catch (err) {
+              Alert.alert('Error', err.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleTripStatusChange = (trip) => {
+    setEditTrip(trip);
+  };
+
+  const handleModalClose = (success) => {
+    setEditRoute(null);
+    setEditTrip(null);
+    if (success) refresh();
+  };
+
+  const showSubFilter = () => {
+    if (activeTab === 'institutional' && userRole === 'student') return false;
+    return true;
+  };
+
+  const getListData = () => {
+    if (activeTab === 'institutional') {
+      if (userRole === 'student') return subscribedRoutes;
+      if (subFilter === 'all') return [...createdRoutes, ...subscribedRoutes];
+      return subFilter === 'created' ? createdRoutes : subscribedRoutes;
+    }
+    if (subFilter === 'all') return [...createdTrips, ...subscribedTrips];
+    return subFilter === 'created' ? createdTrips : subscribedTrips;
+  };
+
+  const getEmptyText = () => {
+    if (activeTab === 'institutional') {
+      if (userRole === 'student') return 'No estás inscrito en ninguna ruta';
+      if (subFilter === 'all') return 'No tienes rutas';
+      return subFilter === 'created' ? 'No tienes rutas creadas' : 'No estás inscrito en ninguna ruta';
+    }
+    if (subFilter === 'all') return 'No tienes viajes';
+    return subFilter === 'created' ? 'No tienes viajes creados' : 'No estás inscrito en ningún viaje';
+  };
+
+  const isManageItem = (item) => {
+    if (activeTab === 'institutional' && userRole === 'student') return false;
+    if (subFilter === 'created') return true;
+    if (subFilter === 'all') return item.relationship === 'owner';
+    return false;
+  };
+
+  const listData = getListData();
+  const itemType = activeTab === 'institutional' ? 'route' : 'trip';
+
+  if (loading && createdRoutes.length === 0 && subscribedRoutes.length === 0 && createdTrips.length === 0 && subscribedTrips.length === 0) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -52,26 +112,96 @@ export default function TripsScreen() {
         onNotificationPress={() => router.push('/notifications')}
         theme={theme}
       />
-      <SectionList
-        style={styles.listContainer}
-        sections={sections}
-        keyExtractor={(item) => `${item._type}-${item._id}`}
-        renderSectionHeader={({ section }) => (
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{section.title}</Text>
-        )}
-        renderItem={({ item }) => (
-          <RouteCard item={item} type={item._type} onPress={() => handlePress(item)} />
-        )}
-        renderSectionFooter={({ section }) =>
-          section.data.length === 0 ? (
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{section.emptyText}</Text>
-          ) : null
+
+      <View style={styles.tabsRow}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'institutional' && { borderBottomColor: theme.primary }]}
+          onPress={() => { setActiveTab('institutional'); setSubFilter('all'); }}
+        >
+          <Text style={[
+            styles.tabText,
+            { color: activeTab === 'institutional' ? theme.primary : theme.textSecondary },
+            activeTab === 'institutional' && styles.tabTextActive,
+          ]}>
+            Institucionales
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'carpooling' && { borderBottomColor: theme.primary }]}
+          onPress={() => { setActiveTab('carpooling'); setSubFilter('all'); }}
+        >
+          <Text style={[
+            styles.tabText,
+            { color: activeTab === 'carpooling' ? theme.primary : theme.textSecondary },
+            activeTab === 'carpooling' && styles.tabTextActive,
+          ]}>
+            Carpooling
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {showSubFilter() && (
+        <View style={styles.chipsRow}>
+          <Chip
+            label="Todas"
+            active={subFilter === 'all'}
+            onPress={() => setSubFilter('all')}
+            theme={theme}
+          />
+          <Chip
+            label="Creadas"
+            active={subFilter === 'created'}
+            onPress={() => setSubFilter('created')}
+            theme={theme}
+          />
+          <Chip
+            label="Inscritas"
+            active={subFilter === 'subscribed'}
+            onPress={() => setSubFilter('subscribed')}
+            theme={theme}
+          />
+        </View>
+      )}
+
+      <FlatList
+        data={listData}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) =>
+          isManageItem(item) ? (
+            <RouteManageCard
+              item={item}
+              type={itemType}
+              onPress={() => handlePress(item, itemType)}
+              onEdit={() => itemType === 'route' ? setEditRoute(item) : setEditTrip(item)}
+              onStatusChange={() => itemType === 'route' ? handleToggleRouteActive(item) : handleTripStatusChange(item)}
+            />
+          ) : (
+            <RouteCard
+              item={item}
+              type={itemType}
+              onPress={() => handlePress(item, itemType)}
+            />
+          )
         }
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={refresh} colors={[theme.primary]} />
         }
         contentContainerStyle={styles.listContent}
-        stickySectionHeadersEnabled={false}
+        ListEmptyComponent={
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{getEmptyText()}</Text>
+        }
+      />
+
+      <EditRouteModal
+        visible={!!editRoute}
+        onClose={handleModalClose}
+        route={editRoute}
+      />
+
+      <EditTripModal
+        visible={!!editTrip}
+        onClose={handleModalClose}
+        trip={editTrip}
       />
     </View>
   );
@@ -79,9 +209,6 @@ export default function TripsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  listContainer: {
     flex: 1,
   },
   centered: {
@@ -93,19 +220,35 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     fontSize: fontSize.sm,
   },
-  listContent: {
-    paddingBottom: spacing.xl,
+  tabsRow: {
+    flexDirection: 'row',
   },
-  sectionTitle: {
-    fontSize: fontSize.lg,
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  tabText: {
+    fontSize: fontSize.md,
+  },
+  tabTextActive: {
     fontWeight: '700',
+  },
+  chipsRow: {
+    flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+  },
+  listContent: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
   },
   emptyText: {
     textAlign: 'center',
     fontSize: fontSize.sm,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.xl,
   },
 });

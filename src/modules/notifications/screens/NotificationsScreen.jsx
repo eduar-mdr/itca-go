@@ -3,10 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { useRouter } from 'expo-router';
 import NotificationItem from '../components/NotificationItem';
 import useNotifications from '../hooks/useNotifications';
-import { lightTheme, spacing, fontSize } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing, fontSize } from '../../../styles/theme';
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { notifications, markRead, markAllRead } = useNotifications();
 
   const handlePress = (notification) => {
@@ -21,11 +23,11 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {notifications.length > 0 && (
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <TouchableOpacity onPress={markAllRead}>
-            <Text style={styles.markAll}>Marcar todas como leídas</Text>
+            <Text style={[styles.markAll, { color: theme.primary }]}>Marcar todas como leídas</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -37,11 +39,12 @@ export default function NotificationsScreen() {
           <NotificationItem
             notification={item}
             onPress={() => handlePress(item)}
+            theme={theme}
           />
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyText}>No tienes notificaciones</Text>
+            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No tienes notificaciones</Text>
           </View>
         }
       />
@@ -52,7 +55,6 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   header: {
     flexDirection: 'row',
@@ -60,11 +62,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: lightTheme.border,
   },
   markAll: {
     fontSize: fontSize.sm,
-    color: lightTheme.primary,
     fontWeight: '600',
   },
   empty: {
@@ -75,6 +75,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: fontSize.md,
-    color: lightTheme.textSecondary,
   },
 });

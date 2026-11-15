@@ -9,10 +9,12 @@ import CreateTripModal from '../components/CreateTripModal';
 import useExploreRoutes from '../hooks/useExploreRoutes';
 import AppHeader from '../../../components/header/AppHeader';
 import useLocation from '../../../hooks/useLocation';
-import { lightTheme, spacing, fontSize } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing, fontSize } from '../../../styles/theme';
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const { theme, isDark } = useTheme();
   const { routes, trips, filter, loading, refresh, setFilter } = useExploreRoutes();
   const { location } = useLocation();
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,7 +46,7 @@ export default function ExploreScreen() {
   const listData = getListData();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.mapContainer}>
         <MapBackground
           routes={routes}
@@ -57,9 +59,10 @@ export default function ExploreScreen() {
             title="ITCA Go"
             transparent
             titleInChip
-            chipBackground="#ffffff"
-            titleColor={lightTheme.accent}
+            chipBackground={isDark ? theme.accent : '#ffffff'}
+            titleColor={isDark ? '#ffffff' : theme.accent}
             onNotificationPress={() => router.push('/notifications')}
+            theme={theme}
           />
         </View>
       </View>
@@ -68,8 +71,8 @@ export default function ExploreScreen() {
 
       {loading && listData.length === 0 ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={lightTheme.primary} />
-          <Text style={styles.loadingText}>Cargando rutas...</Text>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Cargando rutas...</Text>
         </View>
       ) : (
         <FlatList
@@ -84,16 +87,16 @@ export default function ExploreScreen() {
           )}
           contentContainerStyle={styles.list}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refresh} colors={[lightTheme.primary]} />
+            <RefreshControl refreshing={loading} onRefresh={refresh} colors={[theme.primary]} />
           }
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay rutas o viajes disponibles</Text>
+            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No hay rutas o viajes disponibles</Text>
           }
         />
       )}
 
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.accent }]}
         activeOpacity={0.8}
         onPress={() => setModalVisible(true)}
       >
@@ -112,7 +115,6 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   mapContainer: {
     height: '45%',
@@ -136,12 +138,10 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: spacing.sm,
-    color: lightTheme.textSecondary,
     fontSize: fontSize.sm,
   },
   emptyText: {
     textAlign: 'center',
-    color: lightTheme.textSecondary,
     fontSize: fontSize.sm,
     marginTop: spacing.lg,
   },
@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: lightTheme.accent,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 6,

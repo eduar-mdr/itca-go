@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import { lightTheme, spacing, borderRadius, fontSize } from '../../../styles/theme';
+import { lightTheme, spacing, fontSize } from '../../../styles/theme';
 
 const getRelativeTime = (dateStr) => {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -13,7 +13,7 @@ const getRelativeTime = (dateStr) => {
   return `hace ${days}d`;
 };
 
-export default function NotificationItem({ notification, onPress }) {
+export default function NotificationItem({ notification, onPress, theme = lightTheme }) {
   const isUnread = !notification.read;
 
   return (
@@ -23,20 +23,21 @@ export default function NotificationItem({ notification, onPress }) {
       style={[
         styles.container,
         {
-          backgroundColor: isUnread ? lightTheme.surface : lightTheme.background,
-          borderLeftColor: isUnread ? lightTheme.accent : 'transparent',
+          backgroundColor: isUnread ? theme.surface : theme.background,
+          borderLeftColor: isUnread ? theme.accent : 'transparent',
+          borderBottomColor: theme.border,
         },
       ]}
     >
       <View style={styles.content}>
-        <Text style={[styles.title, isUnread && styles.titleUnread]}>
+        <Text style={[styles.title, { color: theme.textPrimary }, isUnread && styles.titleUnread]}>
           {notification.title}
         </Text>
-        <Text style={styles.body} numberOfLines={2}>
+        <Text style={[styles.body, { color: theme.textSecondary }]} numberOfLines={2}>
           {notification.body}
         </Text>
       </View>
-      <Text style={styles.time}>{getRelativeTime(notification.createdAt)}</Text>
+      <Text style={[styles.time, { color: theme.textSecondary }]}>{getRelativeTime(notification.createdAt)}</Text>
     </TouchableOpacity>
   );
 }
@@ -49,7 +50,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderLeftWidth: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: lightTheme.border,
   },
   content: {
     flex: 1,
@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSize.md,
-    color: lightTheme.textPrimary,
     marginBottom: 2,
   },
   titleUnread: {
@@ -65,11 +64,9 @@ const styles = StyleSheet.create({
   },
   body: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     lineHeight: 20,
   },
   time: {
     fontSize: fontSize.xs,
-    color: lightTheme.textSecondary,
   },
 });

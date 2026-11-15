@@ -17,7 +17,7 @@ const formatRelativeTime = (dateString) => {
   return `hace ${diffDays}d`;
 };
 
-export default function DiscussionSection({ comments = [], onSendComment, loading = false }) {
+export default function DiscussionSection({ comments = [], onSendComment, loading = false, theme = lightTheme }) {
   const [text, setText] = useState('');
 
   const handleSend = () => {
@@ -28,19 +28,19 @@ export default function DiscussionSection({ comments = [], onSendComment, loadin
   };
 
   const renderComment = ({ item }) => (
-    <View style={styles.bubble}>
-      <Text style={styles.author}>{item.author?.name || 'Usuario'}</Text>
-      <Text style={styles.commentText}>{item.text}</Text>
-      <Text style={styles.time}>{formatRelativeTime(item.createdAt)}</Text>
+    <View style={[styles.bubble, { backgroundColor: theme.background, borderColor: theme.border }]}>
+      <Text style={[styles.author, { color: theme.primary }]}>{item.author?.name || 'Usuario'}</Text>
+      <Text style={[styles.commentText, { color: theme.textPrimary }]}>{item.text}</Text>
+      <Text style={[styles.time, { color: theme.textSecondary }]}>{formatRelativeTime(item.createdAt)}</Text>
     </View>
   );
 
   return (
-    <Card style={styles.card}>
-      <Text style={styles.title}>Comentarios ({comments.length})</Text>
+    <Card style={styles.card} theme={theme}>
+      <Text style={[styles.title, { color: theme.textPrimary }]}>Comentarios ({comments.length})</Text>
 
       {comments.length === 0 ? (
-        <Text style={styles.empty}>Sin comentarios aún. Inicia la conversación.</Text>
+        <Text style={[styles.empty, { color: theme.textSecondary }]}>Sin comentarios aún. Inicia la conversación.</Text>
       ) : (
         <FlatList
           data={comments}
@@ -53,9 +53,9 @@ export default function DiscussionSection({ comments = [], onSendComment, loadin
 
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: theme.border, color: theme.textPrimary, backgroundColor: theme.background }]}
           placeholder="Escribe un comentario..."
-          placeholderTextColor={lightTheme.textSecondary}
+          placeholderTextColor={theme.textSecondary}
           value={text}
           onChangeText={setText}
           returnKeyType="send"
@@ -63,7 +63,7 @@ export default function DiscussionSection({ comments = [], onSendComment, loadin
           editable={!loading}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!text.trim() || loading) && styles.sendDisabled]}
+          style={[styles.sendButton, { backgroundColor: theme.primary }, (!text.trim() || loading) && styles.sendDisabled]}
           onPress={handleSend}
           disabled={!text.trim() || loading}
         >
@@ -82,12 +82,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     marginBottom: spacing.sm,
   },
   empty: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     fontStyle: 'italic',
     marginBottom: spacing.sm,
   },
@@ -95,26 +93,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   bubble: {
-    backgroundColor: lightTheme.background,
     borderRadius: borderRadius.sm,
     padding: spacing.sm,
     marginBottom: spacing.xs,
     borderWidth: 1,
-    borderColor: lightTheme.border,
   },
   author: {
     fontSize: fontSize.xs,
     fontWeight: '700',
-    color: lightTheme.primary,
     marginBottom: 2,
   },
   commentText: {
     fontSize: fontSize.sm,
-    color: lightTheme.textPrimary,
   },
   time: {
     fontSize: fontSize.xs,
-    color: lightTheme.textSecondary,
     textAlign: 'right',
     marginTop: spacing.xs,
   },
@@ -127,16 +120,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: lightTheme.border,
     borderRadius: borderRadius.sm,
     paddingHorizontal: spacing.sm + 4,
     paddingVertical: spacing.sm,
     fontSize: fontSize.sm,
-    color: lightTheme.textPrimary,
-    backgroundColor: lightTheme.background,
   },
   sendButton: {
-    backgroundColor: lightTheme.primary,
     borderRadius: borderRadius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,

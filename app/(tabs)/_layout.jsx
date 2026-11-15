@@ -1,17 +1,19 @@
 import { Tabs } from 'expo-router';
-import { lightTheme } from '../../src/styles/theme';
 import Ionicons from '@react-native-vector-icons/ionicons';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const TabsLayout = () => {
+  const { theme } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: lightTheme.primary,
-        tabBarInactiveTintColor: lightTheme.textSecondary,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarStyle: {
-          backgroundColor: lightTheme.background,
-          borderTopColor: lightTheme.border,
+          backgroundColor: theme.background,
+          borderTopColor: theme.border,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -21,26 +23,29 @@ const TabsLayout = () => {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Explorar',
+        options={{
+          title: 'Explorar',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" color={color} size={size} />
-          )
-         }}
+          ),
+        }}
       />
       <Tabs.Screen
         name="trips"
-        options={{ title: 'Mis Viajes',
+        options={{
+          title: 'Mis Viajes',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="car" color={color} size={size} />
-          )
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Perfil',
+        options={{
+          title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" color={color} size={size} />
-          )
+          ),
         }}
       />
     </Tabs>

@@ -6,7 +6,8 @@ import Dropdown from '../../../components/dropdown/Dropdown';
 import LocationPicker from '../../../components/location-picker/LocationPicker';
 import DateTimePicker from '../../../components/datetime-picker/DateTimePicker';
 import SchedulePicker from '../../../components/schedule-picker/SchedulePicker';
-import { lightTheme, spacing } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing } from '../../../styles/theme';
 import useCreateTrip from '../hooks/useCreateTrip';
 
 const TYPE_OPTIONS = [
@@ -15,6 +16,7 @@ const TYPE_OPTIONS = [
 ];
 
 export default function CreateTripModal({ visible, onClose, userRole }) {
+  const { theme } = useTheme();
   const { createTrip, createRoute, loading, error } = useCreateTrip();
   const [pubType, setPubType] = useState('trip');
 
@@ -79,11 +81,12 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
   };
 
   const showType = userRole === 'driver' ? pubType : 'trip';
+  const inputStyle = [styles.input, { borderColor: theme.border, color: theme.textPrimary, backgroundColor: theme.surface }];
 
   return (
-    <Dialog visible={visible} onClose={() => onClose()} title="Publicar" fullScreen theme={lightTheme}>
+    <Dialog visible={visible} onClose={() => onClose()} title="Publicar" fullScreen theme={theme}>
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={[styles.error, { color: theme.accent }]}>{error}</Text>}
 
         {userRole === 'driver' && (
           <Dropdown
@@ -91,6 +94,7 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
             options={TYPE_OPTIONS}
             selectedValue={pubType}
             onValueChange={setPubType}
+            theme={theme}
           />
         )}
 
@@ -98,13 +102,13 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
 
         {showType === 'trip' ? (
           <>
-            <LocationPicker label="Seleccionar origen" value={originLocation} onChange={setOriginLocation} />
-            <LocationPicker label="Seleccionar destino" value={destinationLocation} onChange={setDestinationLocation} />
-            <DateTimePicker label="Fecha y hora de salida" value={departureTime} onChange={setDepartureTime} mode="datetime" />
+            <LocationPicker label="Seleccionar origen" value={originLocation} onChange={setOriginLocation} theme={theme} />
+            <LocationPicker label="Seleccionar destino" value={destinationLocation} onChange={setDestinationLocation} theme={theme} />
+            <DateTimePicker label="Fecha y hora de salida" value={departureTime} onChange={setDepartureTime} mode="datetime" theme={theme} />
             <TextInput
-              style={styles.input}
+              style={inputStyle}
               placeholder="Cupos disponibles"
-              placeholderTextColor={lightTheme.textSecondary}
+              placeholderTextColor={theme.textSecondary}
               value={totalSeats}
               onChangeText={setTotalSeats}
               keyboardType="numeric"
@@ -114,23 +118,23 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
             />
             <TextInput
               ref={tripPriceRef}
-              style={styles.input}
+              style={inputStyle}
               placeholder="Precio simulado (opcional)"
-              placeholderTextColor={lightTheme.textSecondary}
+              placeholderTextColor={theme.textSecondary}
               value={simulatedPrice}
               onChangeText={setSimulatedPrice}
               keyboardType="decimal-pad"
               returnKeyType="done"
               onSubmitEditing={handleSubmitTrip}
             />
-            <Button title="Publicar Viaje" variant="cta" onPress={handleSubmitTrip} loading={loading} disabled={!isTripValid} />
+            <Button title="Publicar Viaje" variant="cta" onPress={handleSubmitTrip} loading={loading} disabled={!isTripValid} theme={theme} />
           </>
         ) : (
           <>
             <TextInput
-              style={styles.input}
+              style={inputStyle}
               placeholder="Nombre de la ruta"
-              placeholderTextColor={lightTheme.textSecondary}
+              placeholderTextColor={theme.textSecondary}
               value={routeName}
               onChangeText={setRouteName}
               returnKeyType="next"
@@ -139,18 +143,18 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
             />
             <TextInput
               ref={routeDescRef}
-              style={styles.input}
+              style={inputStyle}
               placeholder="Descripción"
-              placeholderTextColor={lightTheme.textSecondary}
+              placeholderTextColor={theme.textSecondary}
               value={routeDesc}
               onChangeText={setRouteDesc}
               returnKeyType="done"
               multiline
             />
-            <LocationPicker label="Seleccionar origen de la ruta" value={routeOriginLocation} onChange={setRouteOriginLocation} />
-            <LocationPicker label="Seleccionar destino de la ruta" value={routeDestLocation} onChange={setRouteDestLocation} />
-            <SchedulePicker value={routeSchedule} onChange={setRouteSchedule} />
-            <Button title="Publicar Ruta" variant="primary" onPress={handleSubmitRoute} loading={loading} disabled={!isRouteValid} />
+            <LocationPicker label="Seleccionar origen de la ruta" value={routeOriginLocation} onChange={setRouteOriginLocation} theme={theme} />
+            <LocationPicker label="Seleccionar destino de la ruta" value={routeDestLocation} onChange={setRouteDestLocation} theme={theme} />
+            <SchedulePicker value={routeSchedule} onChange={setRouteSchedule} theme={theme} />
+            <Button title="Publicar Ruta" variant="primary" onPress={handleSubmitRoute} loading={loading} disabled={!isRouteValid} theme={theme} />
           </>
         )}
       </ScrollView>
@@ -161,16 +165,12 @@ export default function CreateTripModal({ visible, onClose, userRole }) {
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderColor: lightTheme.border,
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    color: lightTheme.textPrimary,
-    backgroundColor: lightTheme.surface,
     marginBottom: spacing.sm,
   },
   error: {
-    color: lightTheme.accent,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: spacing.sm,

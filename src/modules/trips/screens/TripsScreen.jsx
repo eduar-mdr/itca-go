@@ -3,14 +3,16 @@ import { View, Text, SectionList, StyleSheet, ActivityIndicator, RefreshControl 
 import { useRouter } from 'expo-router';
 import RouteCard from '../../explore/components/RouteCard';
 import AppHeader from '../../../components/header/AppHeader';
+import { useTheme } from '../../../context/ThemeContext';
 import useMyTrips from '../hooks/useMyTrips';
-import { lightTheme, spacing, fontSize } from '../../../styles/theme';
+import { spacing, fontSize } from '../../../styles/theme';
 
 const EMPTY_ROUTES = 'No estás inscrito en ninguna ruta';
 const EMPTY_TRIPS = 'No tienes viajes activos';
 
 export default function TripsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { myTrips, myRoutes, loading, refresh } = useMyTrips();
 
   const sections = [
@@ -36,40 +38,41 @@ export default function TripsScreen() {
 
   if (loading && myTrips.length === 0 && myRoutes.length === 0) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={lightTheme.primary} />
-        <Text style={styles.loadingText}>Cargando tus viajes...</Text>
+      <View style={[styles.centered, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Cargando tus viajes...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <AppHeader
         title="Mis Viajes"
         onNotificationPress={() => router.push('/notifications')}
+        theme={theme}
       />
-    <SectionList
-      style={styles.listContainer}
-      sections={sections}
-      keyExtractor={(item) => `${item._type}-${item._id}`}
-      renderSectionHeader={({ section }) => (
-        <Text style={styles.sectionTitle}>{section.title}</Text>
-      )}
-      renderItem={({ item }) => (
-        <RouteCard item={item} type={item._type} onPress={() => handlePress(item)} />
-      )}
-      renderSectionFooter={({ section }) =>
-        section.data.length === 0 ? (
-          <Text style={styles.emptyText}>{section.emptyText}</Text>
-        ) : null
-      }
-      refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={refresh} colors={[lightTheme.primary]} />
-      }
-      contentContainerStyle={styles.listContent}
-      stickySectionHeadersEnabled={false}
-    />
+      <SectionList
+        style={styles.listContainer}
+        sections={sections}
+        keyExtractor={(item) => `${item._type}-${item._id}`}
+        renderSectionHeader={({ section }) => (
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{section.title}</Text>
+        )}
+        renderItem={({ item }) => (
+          <RouteCard item={item} type={item._type} onPress={() => handlePress(item)} />
+        )}
+        renderSectionFooter={({ section }) =>
+          section.data.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{section.emptyText}</Text>
+          ) : null
+        }
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refresh} colors={[theme.primary]} />
+        }
+        contentContainerStyle={styles.listContent}
+        stickySectionHeadersEnabled={false}
+      />
     </View>
   );
 }
@@ -77,7 +80,6 @@ export default function TripsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   listContainer: {
     flex: 1,
@@ -86,11 +88,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: lightTheme.background,
   },
   loadingText: {
     marginTop: spacing.sm,
-    color: lightTheme.textSecondary,
     fontSize: fontSize.sm,
   },
   listContent: {
@@ -99,14 +99,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.lg,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
   emptyText: {
     textAlign: 'center',
-    color: lightTheme.textSecondary,
     fontSize: fontSize.sm,
     paddingVertical: spacing.lg,
   },

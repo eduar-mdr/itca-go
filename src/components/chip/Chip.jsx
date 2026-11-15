@@ -11,7 +11,7 @@ export default function Chip({ label, active = false, icon, onPress, theme = lig
         styles.container,
         active
           ? { backgroundColor: theme.primary, borderColor: theme.primary }
-          : { backgroundColor: '#ffffff', borderColor: theme.border },
+          : { backgroundColor: theme.surface, borderColor: theme.border },
       ]}
     >
       {icon && <>{icon}</>}

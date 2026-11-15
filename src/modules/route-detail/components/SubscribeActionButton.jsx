@@ -1,18 +1,19 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Button from '../../../components/button/Button';
-import { spacing } from '../../../styles/theme';
+import { lightTheme, spacing } from '../../../styles/theme';
 
-export default function SubscribeActionButton({ type, isSubscribed, onSubscribe, loading, availableSeats }) {
+export default function SubscribeActionButton({ type, isSubscribed, onSubscribe, loading, availableSeats, theme = lightTheme }) {
   if (type === 'route') {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.background + 'F2', borderTopColor: theme.border }]}>
         <Button
           title={isSubscribed ? 'Ya estás inscrito' : 'Inscribirse a esta ruta'}
           variant={isSubscribed ? 'secondary' : 'cta'}
           onPress={onSubscribe}
           loading={loading}
           disabled={isSubscribed}
+          theme={theme}
         />
       </View>
     );
@@ -24,13 +25,14 @@ export default function SubscribeActionButton({ type, isSubscribed, onSubscribe,
   if (noSeats) title = 'Sin cupos disponibles';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background + 'F2', borderTopColor: theme.border }]}>
       <Button
         title={title}
         variant={isSubscribed || noSeats ? 'secondary' : 'cta'}
         onPress={onSubscribe}
         loading={loading}
         disabled={isSubscribed || noSeats}
+        theme={theme}
       />
     </View>
   );
@@ -44,8 +46,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    backgroundColor: 'rgba(255,255,255,0.95)',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
 });

@@ -4,21 +4,24 @@ import { useRouter } from 'expo-router';
 import ProfileCard from '../components/ProfileCard';
 import Button from '../../../components/button/Button';
 import AppHeader from '../../../components/header/AppHeader';
+import { useTheme } from '../../../context/ThemeContext';
 import useProfile from '../hooks/useProfile';
-import { lightTheme, spacing } from '../../../styles/theme';
+import { spacing } from '../../../styles/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { user, logout, loading } = useProfile();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <AppHeader
         title="Perfil"
         onNotificationPress={() => router.push('/notifications')}
+        theme={theme}
       />
       <ScrollView contentContainerStyle={styles.content}>
-        <ProfileCard user={user} />
+        <ProfileCard user={user} theme={theme} />
 
         <View style={styles.logoutContainer}>
           <Button
@@ -26,6 +29,7 @@ export default function ProfileScreen() {
             variant="cta"
             onPress={logout}
             loading={loading}
+            theme={theme}
           />
         </View>
       </ScrollView>
@@ -36,7 +40,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   content: {
     flexGrow: 1,

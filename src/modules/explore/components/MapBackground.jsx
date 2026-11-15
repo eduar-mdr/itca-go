@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { Text } from 'react-native';
-import { lightTheme } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
 
 const DEFAULT_REGION = {
   latitude: 13.6929,
@@ -17,6 +17,7 @@ const toLatLng = (geoPoint) => {
 };
 
 export default function MapBackground({ routes = [], trips = [], userLocation, onMarkerPress }) {
+  const { theme } = useTheme();
   const region = userLocation
     ? { ...DEFAULT_REGION, latitude: userLocation.latitude, longitude: userLocation.longitude }
     : DEFAULT_REGION;
@@ -30,7 +31,7 @@ export default function MapBackground({ routes = [], trips = [], userLocation, o
           <Marker
             key={`route-${route._id}`}
             coordinate={coord}
-            pinColor={lightTheme.primary}
+            pinColor={theme.primary}
             onPress={() => onMarkerPress?.(route, 'route')}
           >
             <Callout>
@@ -47,7 +48,7 @@ export default function MapBackground({ routes = [], trips = [], userLocation, o
           <Marker
             key={`trip-${trip._id}`}
             coordinate={coord}
-            pinColor={lightTheme.accent}
+            pinColor={theme.accent}
             onPress={() => onMarkerPress?.(trip, 'trip')}
           >
             <Callout>
@@ -67,7 +68,6 @@ const styles = StyleSheet.create({
   callout: {
     fontSize: 13,
     fontWeight: '600',
-    color: lightTheme.textPrimary,
     maxWidth: 180,
   },
 });

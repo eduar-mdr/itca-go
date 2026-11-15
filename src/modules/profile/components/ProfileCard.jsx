@@ -11,37 +11,37 @@ const getInitials = (name) => {
 
 const roleLabels = { student: 'Estudiante', driver: 'Conductor' };
 
-export default function ProfileCard({ user }) {
+export default function ProfileCard({ user, theme = lightTheme }) {
   if (!user) return null;
 
   const isDriver = user.role === 'driver';
 
   return (
-    <Card style={styles.card}>
+    <Card style={styles.card} theme={theme}>
       <View style={styles.avatarContainer}>
-        <View style={[styles.avatar, { backgroundColor: lightTheme.primary }]}>
+        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
           <Text style={styles.avatarText}>{getInitials(user.name).toUpperCase()}</Text>
         </View>
       </View>
 
-      <Text style={styles.name}>{user.name}</Text>
-      <Text style={styles.email}>{user.email}</Text>
+      <Text style={[styles.name, { color: theme.textPrimary }]}>{user.name}</Text>
+      <Text style={[styles.email, { color: theme.textSecondary }]}>{user.email}</Text>
 
-      <View style={[styles.roleBadge, { backgroundColor: isDriver ? lightTheme.primary : lightTheme.accent }]}>
+      <View style={[styles.roleBadge, { backgroundColor: isDriver ? theme.primary : theme.accent }]}>
         <Text style={styles.roleText}>{roleLabels[user.role] || user.role}</Text>
       </View>
 
       {user.studentId ? (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Carnet</Text>
-          <Text style={styles.infoValue}>{user.studentId}</Text>
+        <View style={[styles.infoRow, { borderTopColor: theme.border }]}>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Carnet</Text>
+          <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.studentId}</Text>
         </View>
       ) : null}
 
       {user.phone ? (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Teléfono</Text>
-          <Text style={styles.infoValue}>{user.phone}</Text>
+        <View style={[styles.infoRow, { borderTopColor: theme.border }]}>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Teléfono</Text>
+          <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.phone}</Text>
         </View>
       ) : null}
     </Card>
@@ -73,12 +73,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: fontSize.xl,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     marginBottom: 4,
   },
   email: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginBottom: spacing.md,
   },
   roleBadge: {
@@ -98,15 +96,12 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: lightTheme.border,
   },
   infoLabel: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
   },
   infoValue: {
     fontSize: fontSize.sm,
-    color: lightTheme.textPrimary,
     fontWeight: '600',
   },
 });

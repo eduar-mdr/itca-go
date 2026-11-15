@@ -3,31 +3,31 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Card from '../../../components/card/Card';
 import { lightTheme, spacing, fontSize } from '../../../styles/theme';
 
-export default function PassengersList({ passengers = [], maxVisible = 3, onShowAll }) {
+export default function PassengersList({ passengers = [], maxVisible = 3, onShowAll, theme = lightTheme }) {
   const visible = passengers.slice(0, maxVisible);
   const hasMore = passengers.length > maxVisible;
 
   return (
-    <Card style={styles.card}>
-      <Text style={styles.title}>Pasajeros ({passengers.length})</Text>
+    <Card style={styles.card} theme={theme}>
+      <Text style={[styles.title, { color: theme.textPrimary }]}>Pasajeros ({passengers.length})</Text>
 
       {passengers.length === 0 ? (
-        <Text style={styles.empty}>Sin pasajeros aún</Text>
+        <Text style={[styles.empty, { color: theme.textSecondary }]}>Sin pasajeros aún</Text>
       ) : (
         <>
           {visible.map((p) => (
             <View key={p._id} style={styles.row}>
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
                 <Text style={styles.avatarText}>
                   {p.name ? p.name.charAt(0).toUpperCase() : '?'}
                 </Text>
               </View>
-              <Text style={styles.name}>{p.name}</Text>
+              <Text style={[styles.name, { color: theme.textPrimary }]}>{p.name}</Text>
             </View>
           ))}
           {hasMore && (
             <TouchableOpacity onPress={onShowAll}>
-              <Text style={styles.showAll}>Ver todos ({passengers.length})</Text>
+              <Text style={[styles.showAll, { color: theme.primary }]}>Ver todos ({passengers.length})</Text>
             </TouchableOpacity>
           )}
         </>
@@ -44,12 +44,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     marginBottom: spacing.sm,
   },
   empty: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     fontStyle: 'italic',
   },
   row: {
@@ -61,7 +59,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: lightTheme.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,
@@ -73,11 +70,9 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: fontSize.sm,
-    color: lightTheme.textPrimary,
   },
   showAll: {
     fontSize: fontSize.sm,
-    color: lightTheme.primary,
     fontWeight: '600',
     marginTop: spacing.sm,
     textAlign: 'center',

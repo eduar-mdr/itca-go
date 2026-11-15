@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import Chip from '../../../components/chip/Chip';
-import { lightTheme, spacing } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing } from '../../../styles/theme';
 
 const FILTERS = [
   { label: 'Todas', value: 'all' },
@@ -10,8 +11,10 @@ const FILTERS = [
 ];
 
 export default function RouteFilterChips({ activeFilter, onFilterChange }) {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -23,7 +26,7 @@ export default function RouteFilterChips({ activeFilter, onFilterChange }) {
             label={f.label}
             active={activeFilter === f.value}
             onPress={() => onFilterChange(f.value)}
-            theme={lightTheme}
+            theme={theme}
           />
         ))}
       </ScrollView>
@@ -33,9 +36,7 @@ export default function RouteFilterChips({ activeFilter, onFilterChange }) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: lightTheme.background,
     borderBottomWidth: 1,
-    borderBottomColor: lightTheme.border,
   },
   container: {
     flexDirection: 'row',

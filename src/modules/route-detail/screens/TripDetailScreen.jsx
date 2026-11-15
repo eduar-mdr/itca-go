@@ -10,7 +10,8 @@ import Card from '../../../components/card/Card';
 import useRouteDetail from '../hooks/useRouteDetail';
 import useComments from '../hooks/useComments';
 import useSubscription from '../hooks/useSubscription';
-import { lightTheme, spacing, borderRadius, fontSize } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing, borderRadius, fontSize } from '../../../styles/theme';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '';
@@ -21,77 +22,80 @@ const formatDate = (dateStr) => {
   });
 };
 
-const STATUS_LABELS = {
-  available: { text: 'Disponible', bg: '#4caf50' },
-  full: { text: 'Lleno', bg: lightTheme.accent },
-  in_progress: { text: 'En proceso', bg: lightTheme.primary },
-  completed: { text: 'Completado', bg: '#777' },
-  cancelled: { text: 'Cancelado', bg: '#d32f2f' },
-  delayed: { text: 'Retrasado', bg: '#ff9800' },
-};
-
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams();
+  const { theme } = useTheme();
   const { item, loading, error } = useRouteDetail(id, 'trip');
   const { comments, sendComment, loading: commentsLoading } = useComments(id, 'trip');
   const { subscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'trip', item);
   const [dialogVisible, setDialogVisible] = useState(false);
 
+  const statusLabels = {
+    available: { text: 'Disponible', bg: '#4caf50' },
+    full: { text: 'Lleno', bg: theme.accent },
+    in_progress: { text: 'En proceso', bg: theme.primary },
+    completed: { text: 'Completado', bg: '#777' },
+    cancelled: { text: 'Cancelado', bg: '#d32f2f' },
+    delayed: { text: 'Retrasado', bg: '#ff9800' },
+  };
+
   if (loading || !item) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={lightTheme.primary} />
-        {error && <Text style={styles.error}>{error}</Text>}
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        {error && <Text style={[styles.error, { color: theme.accent }]}>{error}</Text>}
       </View>
     );
   }
 
   const passengers = item.passengers || [];
-  const statusInfo = STATUS_LABELS[item.status] || STATUS_LABELS.available;
+  const statusInfo = statusLabels[item.status] || statusLabels.available;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <MapHeader
           originLocation={item.originLocation}
           destinationLocation={item.destinationLocation}
         />
 
-        <Card style={styles.infoCard}>
+        <Card style={styles.infoCard} theme={theme}>
           <View style={styles.headerRow}>
-            <Text style={styles.route}>{item.origin} → {item.destination}</Text>
+            <Text style={[styles.route, { color: theme.textPrimary }]}>{item.origin} → {item.destination}</Text>
             <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
               <Text style={styles.badgeText}>{statusInfo.text}</Text>
             </View>
           </View>
 
-          <Text style={styles.departure}>{formatDate(item.departureTime)}</Text>
+          <Text style={[styles.departure, { color: theme.textSecondary }]}>{formatDate(item.departureTime)}</Text>
 
           <View style={styles.seatsRow}>
-            <Text style={styles.label}>Cupos: </Text>
-            <Text style={styles.seats}>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>Cupos: </Text>
+            <Text style={[styles.seats, { color: theme.primary }]}>
               {item.availableSeats} / {item.totalSeats} disponibles
             </Text>
           </View>
 
           {item.driver && (
-            <Text style={styles.driver}>Conductor: {item.driver.name}</Text>
+            <Text style={[styles.driver, { color: theme.textSecondary }]}>Conductor: {item.driver.name}</Text>
           )}
 
           {item.simulatedPrice > 0 && (
-            <Text style={styles.price}>Precio: ${item.simulatedPrice.toFixed(2)}</Text>
+            <Text style={[styles.price, { color: theme.textSecondary }]}>Precio: ${item.simulatedPrice.toFixed(2)}</Text>
           )}
         </Card>
 
         <PassengersList
           passengers={passengers}
           onShowAll={() => setDialogVisible(true)}
+          theme={theme}
         />
 
         <DiscussionSection
           comments={comments}
           onSendComment={sendComment}
           loading={commentsLoading}
+          theme={theme}
         />
 
         <View style={styles.bottomSpacer} />
@@ -103,12 +107,14 @@ export default function TripDetailScreen() {
         onSubscribe={subscribe}
         loading={subLoading}
         availableSeats={item.availableSeats}
+        theme={theme}
       />
 
       <PassengersDialog
         visible={dialogVisible}
         onClose={() => setDialogVisible(false)}
         passengers={passengers}
+        theme={theme}
       />
     </View>
   );
@@ -117,13 +123,11 @@ export default function TripDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: lightTheme.background,
   },
   scroll: {
     paddingBottom: 100,
@@ -142,7 +146,6 @@ const styles = StyleSheet.create({
   route: {
     fontSize: fontSize.lg,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -158,7 +161,6 @@ const styles = StyleSheet.create({
   },
   departure: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginBottom: spacing.sm,
   },
   seatsRow: {
@@ -168,25 +170,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: lightTheme.textPrimary,
   },
   seats: {
     fontSize: fontSize.sm,
-    color: lightTheme.primary,
     fontWeight: '600',
   },
   driver: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginTop: spacing.xs,
   },
   price: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginTop: spacing.xs,
   },
   error: {
-    color: lightTheme.accent,
     marginTop: spacing.sm,
   },
   bottomSpacer: {

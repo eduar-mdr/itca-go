@@ -10,10 +10,12 @@ import Card from '../../../components/card/Card';
 import useRouteDetail from '../hooks/useRouteDetail';
 import useComments from '../hooks/useComments';
 import useSubscription from '../hooks/useSubscription';
-import { lightTheme, spacing, fontSize } from '../../../styles/theme';
+import { useTheme } from '../../../context/ThemeContext';
+import { spacing, fontSize } from '../../../styles/theme';
 
 export default function RouteDetailScreen() {
   const { id } = useLocalSearchParams();
+  const { theme } = useTheme();
   const { item, loading, error, realtimeLocation } = useRouteDetail(id, 'route');
   const { comments, sendComment, loading: commentsLoading } = useComments(id, 'route');
   const { subscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'route', item);
@@ -21,9 +23,9 @@ export default function RouteDetailScreen() {
 
   if (loading || !item) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={lightTheme.primary} />
-        {error && <Text style={styles.error}>{error}</Text>}
+      <View style={[styles.center, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        {error && <Text style={[styles.error, { color: theme.accent }]}>{error}</Text>}
       </View>
     );
   }
@@ -31,7 +33,7 @@ export default function RouteDetailScreen() {
   const subscribers = item.subscribers || [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <MapHeader
           originLocation={item.originLocation}
@@ -39,34 +41,36 @@ export default function RouteDetailScreen() {
           currentLocation={realtimeLocation || item.currentLocation}
         />
 
-        <Card style={styles.infoCard}>
-          <Text style={styles.name}>{item.name}</Text>
-          {item.description ? <Text style={styles.description}>{item.description}</Text> : null}
-          <Text style={styles.route}>{item.origin} → {item.destination}</Text>
+        <Card style={styles.infoCard} theme={theme}>
+          <Text style={[styles.name, { color: theme.textPrimary }]}>{item.name}</Text>
+          {item.description ? <Text style={[styles.description, { color: theme.textSecondary }]}>{item.description}</Text> : null}
+          <Text style={[styles.route, { color: theme.textPrimary }]}>{item.origin} → {item.destination}</Text>
 
           {item.schedule?.length > 0 && (
             <View style={styles.scheduleRow}>
-              <Text style={styles.label}>Horarios: </Text>
-              <Text style={styles.scheduleText}>{item.schedule.join('  ·  ')}</Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>Horarios: </Text>
+              <Text style={[styles.scheduleText, { color: theme.textSecondary }]}>{item.schedule.join('  ·  ')}</Text>
             </View>
           )}
 
           {item.assignedDriver && (
-            <Text style={styles.driver}>Conductor: {item.assignedDriver.name}</Text>
+            <Text style={[styles.driver, { color: theme.textSecondary }]}>Conductor: {item.assignedDriver.name}</Text>
           )}
 
-          <Text style={styles.subs}>Inscritos: {subscribers.length}</Text>
+          <Text style={[styles.subs, { color: theme.primary }]}>Inscritos: {subscribers.length}</Text>
         </Card>
 
         <PassengersList
           passengers={subscribers.map((s, i) => (typeof s === 'object' ? s : { _id: String(i), name: 'Suscriptor' }))}
           onShowAll={() => setDialogVisible(true)}
+          theme={theme}
         />
 
         <DiscussionSection
           comments={comments}
           onSendComment={sendComment}
           loading={commentsLoading}
+          theme={theme}
         />
 
         <View style={styles.bottomSpacer} />
@@ -77,12 +81,14 @@ export default function RouteDetailScreen() {
         isSubscribed={isSubscribed}
         onSubscribe={subscribe}
         loading={subLoading}
+        theme={theme}
       />
 
       <PassengersDialog
         visible={dialogVisible}
         onClose={() => setDialogVisible(false)}
         passengers={subscribers.map((s, i) => (typeof s === 'object' ? s : { _id: String(i), name: 'Suscriptor' }))}
+        theme={theme}
       />
     </View>
   );
@@ -91,13 +97,11 @@ export default function RouteDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: lightTheme.background,
   },
   scroll: {
     paddingBottom: 100,
@@ -110,17 +114,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: fontSize.xl,
     fontWeight: '700',
-    color: lightTheme.textPrimary,
     marginBottom: spacing.xs,
   },
   description: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginBottom: spacing.sm,
   },
   route: {
     fontSize: fontSize.md,
-    color: lightTheme.textPrimary,
     marginBottom: spacing.sm,
   },
   scheduleRow: {
@@ -131,26 +132,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: lightTheme.textPrimary,
   },
   scheduleText: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     flex: 1,
   },
   driver: {
     fontSize: fontSize.sm,
-    color: lightTheme.textSecondary,
     marginTop: spacing.xs,
   },
   subs: {
     fontSize: fontSize.sm,
-    color: lightTheme.primary,
     fontWeight: '600',
     marginTop: spacing.sm,
   },
   error: {
-    color: lightTheme.accent,
     marginTop: spacing.sm,
   },
   bottomSpacer: {

@@ -16,3 +16,6 @@ export const deleteRoute = (id) => api.delete(`/routes/${id}`);
 export const subscribeToRoute = (id) => api.post(`/routes/${id}/subscribe`);
 
 export const unsubscribeFromRoute = (id) => api.post(`/routes/${id}/unsubscribe`);
+
+export const updateRouteStatus = (id, status) =>
+  api.patch(`/routes/${id}/status`, { status });

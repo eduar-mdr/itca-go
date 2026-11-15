@@ -4,7 +4,7 @@ import Card from '../../../components/card/Card';
 import { useTheme } from '../../../context/ThemeContext';
 import { spacing, borderRadius, fontSize } from '../../../styles/theme';
 
-const STATUS_LABELS = {
+const TRIP_STATUS_LABELS = {
   available: { text: 'Disponible', color: '#4caf50' },
   full: { text: 'Lleno', color: '#f44336' },
   in_progress: { text: 'En curso', color: '#2196f3' },
@@ -13,11 +13,18 @@ const STATUS_LABELS = {
   completed: { text: 'Completado', color: '#777' },
 };
 
-export default function RouteManageCard({ item, type, onEdit, onStatusChange, onPress }) {
+const ROUTE_STATUS_LABELS = {
+  idle: { text: 'Sin iniciar', color: '#9e9e9e' },
+  in_progress: { text: 'En curso', color: '#2196f3' },
+  completed: { text: 'Completado', color: '#777' },
+};
+
+export default function RouteManageCard({ item, type, onEdit, onStatusChange, onStartRoute, onPress }) {
   const { theme } = useTheme();
 
   const isRoute = type === 'route';
-  const statusInfo = !isRoute && STATUS_LABELS[item.status];
+  const tripStatus = !isRoute && TRIP_STATUS_LABELS[item.status];
+  const routeStatus = isRoute && ROUTE_STATUS_LABELS[item.status || 'idle'];
 
   return (
     <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
@@ -26,15 +33,23 @@ export default function RouteManageCard({ item, type, onEdit, onStatusChange, on
           <Text style={[styles.name, { color: theme.textPrimary }]} numberOfLines={1}>
             {isRoute ? item.name : `${item.origin} → ${item.destination}`}
           </Text>
-          {isRoute ? (
-            <View style={[styles.badge, { backgroundColor: item.active ? '#4caf50' : '#9e9e9e' }]}>
-              <Text style={styles.badgeText}>{item.active ? 'Activa' : 'Inactiva'}</Text>
-            </View>
-          ) : statusInfo ? (
-            <View style={[styles.badge, { backgroundColor: statusInfo.color }]}>
-              <Text style={styles.badgeText}>{statusInfo.text}</Text>
-            </View>
-          ) : null}
+          <View style={styles.badgesRow}>
+            {isRoute && (
+              <View style={[styles.badge, { backgroundColor: item.active ? '#4caf50' : '#9e9e9e' }]}>
+                <Text style={styles.badgeText}>{item.active ? 'Activa' : 'Inactiva'}</Text>
+              </View>
+            )}
+            {isRoute && routeStatus && (
+              <View style={[styles.badge, { backgroundColor: routeStatus.color }]}>
+                <Text style={styles.badgeText}>{routeStatus.text}</Text>
+              </View>
+            )}
+            {!isRoute && tripStatus && (
+              <View style={[styles.badge, { backgroundColor: tripStatus.color }]}>
+                <Text style={styles.badgeText}>{tripStatus.text}</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {isRoute && (
@@ -61,11 +76,20 @@ export default function RouteManageCard({ item, type, onEdit, onStatusChange, on
           </TouchableOpacity>
 
           {isRoute ? (
-            <TouchableOpacity onPress={onStatusChange} style={styles.actionBtn}>
-              <Text style={[styles.actionText, { color: item.active ? theme.accent : '#4caf50' }]}>
-                {item.active ? 'Desactivar' : 'Activar'}
-              </Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity onPress={onStatusChange} style={styles.actionBtn}>
+                <Text style={[styles.actionText, { color: item.active ? theme.accent : '#4caf50' }]}>
+                  {item.active ? 'Desactivar' : 'Activar'}
+                </Text>
+              </TouchableOpacity>
+              {item.active && (
+                <TouchableOpacity onPress={onStartRoute} style={styles.actionBtn}>
+                  <Text style={[styles.actionText, { color: '#2196f3' }]}>
+                    {item.status === 'in_progress' ? 'Finalizar' : 'Iniciar'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
           ) : (
             <TouchableOpacity onPress={onStatusChange} style={styles.actionBtn}>
               <Text style={[styles.actionText, { color: theme.primary }]}>Estado</Text>
@@ -93,6 +117,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     flex: 1,
     marginRight: spacing.sm,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
   badge: {
     paddingHorizontal: spacing.sm,

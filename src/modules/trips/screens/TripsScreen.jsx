@@ -55,6 +55,31 @@ export default function TripsScreen() {
     setEditTrip(trip);
   };
 
+  const handleStartRoute = async (route) => {
+    const isInProgress = route.status === 'in_progress';
+    Alert.alert(
+      isInProgress ? 'Finalizar ruta' : 'Iniciar ruta',
+      isInProgress
+        ? `¿Finalizar el recorrido de "${route.name}"?`
+        : `¿Iniciar el recorrido de "${route.name}"? Se enviará tu ubicación en tiempo real.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              const newStatus = isInProgress ? 'completed' : 'in_progress';
+              await routeService.updateRouteStatus(route._id, newStatus);
+              refresh();
+            } catch (err) {
+              Alert.alert('Error', err.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleModalClose = (success) => {
     setEditRoute(null);
     setEditTrip(null);
@@ -174,6 +199,7 @@ export default function TripsScreen() {
               onPress={() => handlePress(item, itemType)}
               onEdit={() => itemType === 'route' ? setEditRoute(item) : setEditTrip(item)}
               onStatusChange={() => itemType === 'route' ? handleToggleRouteActive(item) : handleTripStatusChange(item)}
+              onStartRoute={() => handleStartRoute(item)}
             />
           ) : (
             <RouteCard

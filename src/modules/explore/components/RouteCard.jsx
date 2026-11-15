@@ -7,7 +7,7 @@ import { spacing, borderRadius, fontSize } from '../../../styles/theme';
 const STATUS_LABELS = {
   available: 'Disponible',
   full: 'Lleno',
-  in_progress: 'En proceso',
+  in_progress: 'En curso',
   delayed: 'Retrasado',
   completed: 'Completado',
   cancelled: 'Cancelado',

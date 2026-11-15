@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as routeService from '../../../services/route.service';
 import api from '../../../services/api.service';
@@ -9,10 +9,11 @@ export default function useRouteDetail(id, type) {
   const dispatch = useDispatch();
   const { currentItem, loading, error } = useSelector((s) => s.routeDetail);
   const [realtimeLocation, setRealtimeLocation] = useState(null);
+  const isFirstLoad = useRef(true);
 
   const fetchItem = useCallback(async () => {
     try {
-      dispatch(setLoading(true));
+      if (isFirstLoad.current) dispatch(setLoading(true));
       let res;
       if (type === 'route') {
         res = await routeService.getRouteById(id);
@@ -20,7 +21,10 @@ export default function useRouteDetail(id, type) {
         res = await api.get(`/trips/${id}`);
       }
       dispatch(setCurrentItem({ item: res.data, type }));
-      dispatch(setLoading(false));
+      if (isFirstLoad.current) {
+        dispatch(setLoading(false));
+        isFirstLoad.current = false;
+      }
     } catch (err) {
       dispatch(setError(err.message || 'Error al cargar detalle'));
     }
@@ -34,24 +38,29 @@ export default function useRouteDetail(id, type) {
   useEffect(() => {
     if (!id) return;
 
-    let unsubscribe;
+    const unsubscribers = [];
+
     if (type === 'route') {
-      unsubscribe = realtimeService.subscribeToRouteLocation(id, (loc) => {
-        setRealtimeLocation(loc);
-      });
+      unsubscribers.push(
+        realtimeService.subscribeToRouteLocation(id, (loc) => {
+          setRealtimeLocation(loc);
+        })
+      );
+      unsubscribers.push(
+        realtimeService.subscribeToRouteChanges(id, () => {
+          if (!isFirstLoad.current) fetchItem();
+        })
+      );
     } else {
-      unsubscribe = realtimeService.subscribeToTripStatus(id, (data) => {
-        if (currentItem) {
-          dispatch(setCurrentItem({
-            item: { ...currentItem, status: data.status, availableSeats: data.availableSeats },
-            type,
-          }));
-        }
-      });
+      unsubscribers.push(
+        realtimeService.subscribeToTripStatus(id, () => {
+          if (!isFirstLoad.current) fetchItem();
+        })
+      );
     }
 
-    return () => unsubscribe?.();
-  }, [id, type]);
+    return () => unsubscribers.forEach((unsub) => unsub?.());
+  }, [id, type, fetchItem]);
 
   return { item: currentItem, loading, error, realtimeLocation, refresh: fetchItem };
 }

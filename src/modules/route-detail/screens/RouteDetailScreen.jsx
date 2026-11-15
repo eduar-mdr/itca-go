@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import MapHeader from '../components/MapHeader';
 import DiscussionSection from '../components/DiscussionSection';
@@ -33,8 +33,12 @@ export default function RouteDetailScreen() {
   const subscribers = item.subscribers || [];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <MapHeader
           originLocation={item.originLocation}
           destinationLocation={item.destinationLocation}
@@ -91,7 +95,7 @@ export default function RouteDetailScreen() {
         passengers={subscribers.map((s, i) => (typeof s === 'object' ? s : { _id: String(i), name: 'Suscriptor' }))}
         theme={theme}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

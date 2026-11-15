@@ -12,6 +12,15 @@ export const subscribeToRouteLocation = (routeId, callback) => {
   return () => off(locationRef, 'value', handler);
 };
 
+export const subscribeToRouteChanges = (routeId, callback) => {
+  const routeRef = ref(database, `routes/${routeId}`);
+  const handler = onValue(routeRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) callback(data);
+  });
+  return () => off(routeRef, 'value', handler);
+};
+
 export const subscribeToTripStatus = (tripId, callback) => {
   const tripRef = ref(database, `trips/${tripId}`);
   const handler = onValue(tripRef, (snapshot) => {

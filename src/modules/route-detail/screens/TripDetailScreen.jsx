@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import MapHeader from '../components/MapHeader';
 import PassengersList from '../components/PassengersList';
@@ -33,7 +33,7 @@ export default function TripDetailScreen() {
   const statusLabels = {
     available: { text: 'Disponible', bg: '#4caf50' },
     full: { text: 'Lleno', bg: theme.accent },
-    in_progress: { text: 'En proceso', bg: theme.primary },
+    in_progress: { text: 'En curso', bg: theme.primary },
     completed: { text: 'Completado', bg: '#777' },
     cancelled: { text: 'Cancelado', bg: '#d32f2f' },
     delayed: { text: 'Retrasado', bg: '#ff9800' },
@@ -52,8 +52,12 @@ export default function TripDetailScreen() {
   const statusInfo = statusLabels[item.status] || statusLabels.available;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <MapHeader
           originLocation={item.originLocation}
           destinationLocation={item.destinationLocation}
@@ -118,7 +122,7 @@ export default function TripDetailScreen() {
         passengers={passengers}
         theme={theme}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -9,6 +9,7 @@ import CreateTripModal from '../components/CreateTripModal';
 import useExploreRoutes from '../hooks/useExploreRoutes';
 import AppHeader from '../../../components/header/AppHeader';
 import useLocation from '../../../hooks/useLocation';
+import useNotifications from '../../notifications/hooks/useNotifications';
 import { useTheme } from '../../../context/ThemeContext';
 import { spacing, fontSize } from '../../../styles/theme';
 
@@ -20,6 +21,7 @@ export default function ExploreScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const userRole = useSelector((s) => s.user.user?.role) || 'student';
+  const { unreadCount } = useNotifications();
 
   const handleModalClose = (created) => {
     setModalVisible(false);
@@ -61,6 +63,7 @@ export default function ExploreScreen() {
             titleInChip
             chipBackground={isDark ? theme.accent : '#ffffff'}
             titleColor={isDark ? '#ffffff' : theme.accent}
+            notificationCount={unreadCount}
             onNotificationPress={() => router.push('/notifications')}
             theme={theme}
           />

@@ -7,6 +7,7 @@ import { auth } from '../src/config/firebase';
 import store from '../src/stores';
 import { setToken, clearUser } from '../src/modules/auth/stores/userSlice';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import useNotifications from '../src/modules/notifications/hooks/useNotifications';
 
 const RootNavigator = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const RootNavigator = () => {
   const segments = useSegments();
   const { isAuthenticated } = useSelector((state) => state.user);
   const { theme, isDark } = useTheme();
+  useNotifications();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {

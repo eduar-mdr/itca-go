@@ -9,6 +9,7 @@ import EditTripModal from '../components/EditTripModal';
 import AppHeader from '../../../components/header/AppHeader';
 import Chip from '../../../components/chip/Chip';
 import { useTheme } from '../../../context/ThemeContext';
+import useNotifications from '../../notifications/hooks/useNotifications';
 import useMyTrips from '../hooks/useMyTrips';
 import * as routeService from '../../../services/route.service';
 import * as tripService from '../../../services/trip.service';
@@ -19,6 +20,7 @@ export default function TripsScreen() {
   const { theme } = useTheme();
   const userRole = useSelector((s) => s.user.user?.role) || 'student';
   const { createdRoutes, subscribedRoutes, createdTrips, subscribedTrips, loading, refresh } = useMyTrips();
+  const { unreadCount } = useNotifications();
 
   const [activeTab, setActiveTab] = useState('institutional');
   const [subFilter, setSubFilter] = useState('all');
@@ -134,6 +136,7 @@ export default function TripsScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <AppHeader
         title="Mis Viajes"
+        notificationCount={unreadCount}
         onNotificationPress={() => router.push('/notifications')}
         theme={theme}
       />

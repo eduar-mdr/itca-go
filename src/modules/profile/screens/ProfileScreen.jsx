@@ -5,6 +5,7 @@ import ProfileCard from '../components/ProfileCard';
 import Button from '../../../components/button/Button';
 import AppHeader from '../../../components/header/AppHeader';
 import { useTheme } from '../../../context/ThemeContext';
+import useNotifications from '../../notifications/hooks/useNotifications';
 import useProfile from '../hooks/useProfile';
 import { spacing } from '../../../styles/theme';
 
@@ -12,11 +13,13 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { user, logout, loading } = useProfile();
+  const { unreadCount } = useNotifications();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <AppHeader
         title="Perfil"
+        notificationCount={unreadCount}
         onNotificationPress={() => router.push('/notifications')}
         theme={theme}
       />

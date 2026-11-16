@@ -13,6 +13,12 @@
     },
     "android": {
       "package": "sv.edu.itca.go",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "NO_GOOGLE_MAPS_KEY_NEEDED"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#c9902b",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -29,7 +35,35 @@
       "expo-splash-screen",
       "expo-status-bar",
       "expo-font",
-      "@react-native-vector-icons/ionicons"
-    ]
+      "@react-native-vector-icons/ionicons",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#c9902b"
+        }
+      ],
+      "expo-build-properties",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true,
+            "extraProguardRules": "-keep class androidx.work.** { *; }\n-keep class * extends androidx.work.Worker { *; }\n-keep class * extends androidx.work.ListenableWorker { *; }\n-keep class * extends androidx.room.RoomDatabase { *; }"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "cb3d6866-1041-433e-98b7-ba693073ffa5"
+      }
+    },
+    "owner": "proyectos.devv"
   }
 }

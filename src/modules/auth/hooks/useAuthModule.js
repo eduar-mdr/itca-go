@@ -7,6 +7,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../../../config/firebase';
 import * as authService from '../../../services/auth.service';
+import { getAndRegisterPushToken } from '../../../services/notification.service';
 import { setUser, setToken, setLoading, setError, clearUser } from '../stores/userSlice';
 
 const useAuthModule = () => {
@@ -33,6 +34,7 @@ const useAuthModule = () => {
 
       dispatch(setUser(response.data));
       dispatch(setLoading(false));
+      getAndRegisterPushToken().catch(() => {});
     } catch (err) {
       const message = getFirebaseErrorMessage(err.code) || err.message;
       dispatch(setError(message));
@@ -53,6 +55,7 @@ const useAuthModule = () => {
       const response = await authService.getProfile();
       dispatch(setUser(response.data));
       dispatch(setLoading(false));
+      getAndRegisterPushToken().catch(() => {});
     } catch (err) {
       const message = getFirebaseErrorMessage(err.code) || err.message;
       dispatch(setError(message));

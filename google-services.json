@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764779382275",
+    "project_id": "itca-go",
+    "storage_bucket": "itca-go.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764779382275:android:193d462fdc03e1d147b036",
+        "android_client_info": {
+          "package_name": "com.itca.go"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP66kJT1-ZzTEpNQ1uWULkQCjyho66Aig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

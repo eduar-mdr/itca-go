@@ -14,11 +14,6 @@
     "android": {
       "package": "sv.edu.itca.go",
       "googleServicesFile": "./google-services.json",
-      "config": {
-        "googleMaps": {
-          "apiKey": "NO_GOOGLE_MAPS_KEY_NEEDED"
-        }
-      },
       "adaptiveIcon": {
         "backgroundColor": "#c9902b",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -36,6 +31,7 @@
       "expo-status-bar",
       "expo-font",
       "@react-native-vector-icons/ionicons",
+      "@maplibre/maplibre-react-native",
       [
         "expo-notifications",
         {
@@ -52,7 +48,8 @@
             "extraProguardRules": "-keep class androidx.work.** { *; }\n-keep class * extends androidx.work.Worker { *; }\n-keep class * extends androidx.work.ListenableWorker { *; }\n-keep class * extends androidx.room.RoomDatabase { *; }"
           }
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "extra": {
       "router": {

@@ -1,36 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import MapView, { UrlTile } from 'react-native-maps';
+import MapLibreGL from '@maplibre/maplibre-react-native';
 import Button from '../button/Button';
 import { lightTheme, spacing, borderRadius, fontSize } from '../../styles/theme';
 
 const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
-const MAPTILER_URL = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
+const STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
-const DEFAULT_REGION = { latitude: 13.6929, longitude: -89.2182, latitudeDelta: 0.02, longitudeDelta: 0.02 };
+const DEFAULT_CENTER = [-89.2182, 13.6929];
+const DEFAULT_ZOOM = 14;
 
 export default function LocationPicker({ label = 'Seleccionar ubicación', value, onChange, theme = lightTheme }) {
   const [open, setOpen] = useState(false);
   const [address, setAddress] = useState(value?.address || '');
-  const [region, setRegion] = useState(
-    value?.coordinates
-      ? { latitude: value.coordinates[1], longitude: value.coordinates[0], latitudeDelta: 0.02, longitudeDelta: 0.02 }
-      : DEFAULT_REGION
+  const [center, setCenter] = useState(
+    value?.coordinates ? value.coordinates : DEFAULT_CENTER
   );
+  const selectedCoord = useRef(value?.coordinates || DEFAULT_CENTER);
 
   const handleOpen = () => {
     setAddress(value?.address || '');
-    setRegion(
-      value?.coordinates
-        ? { latitude: value.coordinates[1], longitude: value.coordinates[0], latitudeDelta: 0.02, longitudeDelta: 0.02 }
-        : DEFAULT_REGION
-    );
+    const c = value?.coordinates || DEFAULT_CENTER;
+    setCenter(c);
+    selectedCoord.current = c;
     setOpen(true);
+  };
+
+  const handleRegionChange = (feature) => {
+    const coords = feature.geometry.coordinates;
+    selectedCoord.current = coords;
   };
 
   const handleConfirm = () => {
     if (!address.trim()) return;
-    onChange({ coordinates: [region.longitude, region.latitude], address: address.trim() });
+    onChange({ coordinates: selectedCoord.current, address: address.trim() });
     setOpen(false);
   };
 
@@ -61,18 +64,16 @@ export default function LocationPicker({ label = 'Seleccionar ubicación', value
           />
 
           <View style={styles.mapWrapper}>
-            <MapView
+            <MapLibreGL.MapView
               style={styles.map}
-              initialRegion={region}
-              onRegionChangeComplete={setRegion}
-              mapType="none"
-            />
-            <UrlTile
-              urlTemplate={MAPTILER_URL}
-              maximumZ={19}
-              flipY={false}
-              shouldReplaceMapContent={true}
-            />
+              styleURL={STYLE_URL}
+              onRegionDidChange={handleRegionChange}
+            >
+              <MapLibreGL.Camera
+                defaultSettings={{ centerCoordinate: center, zoomLevel: DEFAULT_ZOOM }}
+              />
+            </MapLibreGL.MapView>
+
             <View style={styles.markerFixed}>
               <View style={[styles.markerDot, { backgroundColor: theme.accent }]} />
               <View style={[styles.markerStem, { backgroundColor: theme.accent }]} />
@@ -80,7 +81,7 @@ export default function LocationPicker({ label = 'Seleccionar ubicación', value
           </View>
 
           <View style={styles.footer}>
-            <Button title="Confirmar" variant="cta" onPress={handleConfirm} disabled={!address.trim()} />
+            <Button title="Confirmar" variant="cta" onPress={handleConfirm} disabled={!address.trim()} theme={theme} />
           </View>
         </View>
       </Modal>

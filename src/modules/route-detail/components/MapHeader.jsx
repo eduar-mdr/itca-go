@@ -1,62 +1,84 @@
 import React, { useRef, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
-
-const toLatLng = (geoPoint) => {
-  if (!geoPoint?.coordinates || geoPoint.coordinates.length < 2) return null;
-  return { latitude: geoPoint.coordinates[1], longitude: geoPoint.coordinates[0] };
-};
-
-const DEFAULT_REGION = {
-  latitude: 13.6929,
-  longitude: -89.2182,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
-};
+import { View, StyleSheet } from 'react-native';
+import MapLibreGL from '@maplibre/maplibre-react-native';
 
 const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
-// Estilo 'streets-v2' (calles detalladas). También puedes usar 'basic-v2' o 'dataviz'
-const MAPTILER_URL = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
+const STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
+
+const DEFAULT_CENTER = [-89.2182, 13.6929];
+const DEFAULT_ZOOM = 13;
+
+const toCoord = (geoPoint) => {
+  if (!geoPoint?.coordinates || geoPoint.coordinates.length < 2) return null;
+  return geoPoint.coordinates;
+};
+
+const getBounds = (points) => {
+  const coords = points.filter(Boolean);
+  if (coords.length === 0) return null;
+  if (coords.length === 1) return null;
+
+  const lngs = coords.map(c => c[0]);
+  const lats = coords.map(c => c[1]);
+
+  return {
+    ne: [Math.max(...lngs) + 0.005, Math.max(...lats) + 0.005],
+    sw: [Math.min(...lngs) - 0.005, Math.min(...lats) - 0.005],
+  };
+};
 
 export default function MapHeader({ originLocation, destinationLocation, currentLocation }) {
-  const mapRef = useRef(null);
-  const originCoord = toLatLng(originLocation);
-  const destCoord = toLatLng(destinationLocation);
-  const currentCoord = toLatLng(currentLocation);
+  const cameraRef = useRef(null);
+  const originCoord = toCoord(originLocation);
+  const destCoord = toCoord(destinationLocation);
+  const currentCoord = toCoord(currentLocation);
+
+  const bounds = getBounds([originCoord, destCoord, currentCoord]);
+  const center = originCoord || DEFAULT_CENTER;
 
   useEffect(() => {
-    if (!mapRef.current) return;
-    const points = [originCoord, destCoord, currentCoord].filter(Boolean);
-    if (points.length >= 2) {
-      mapRef.current.fitToCoordinates(points, {
-        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-        animated: true,
-      });
+    if (!cameraRef.current || !currentCoord) return;
+    const newBounds = getBounds([originCoord, destCoord, currentCoord]);
+    if (newBounds) {
+      cameraRef.current.fitBounds(newBounds.ne, newBounds.sw, 50, 300);
     }
-  }, [originCoord?.latitude, destCoord?.latitude, currentCoord?.latitude]);
-
-  const initialRegion = originCoord
-    ? { ...DEFAULT_REGION, latitude: originCoord.latitude, longitude: originCoord.longitude }
-    : DEFAULT_REGION;
+  }, [currentCoord?.[0], currentCoord?.[1]]);
 
   return (
-    <MapView ref={mapRef} style={styles.map} initialRegion={initialRegion} showsUserLocation mapType="none">
-      <UrlTile
-        urlTemplate={MAPTILER_URL}
-        maximumZ={19}
-        flipY={false}
-        shouldReplaceMapContent={true}
+    <MapLibreGL.MapView style={styles.map} styleURL={STYLE_URL}>
+      <MapLibreGL.Camera
+        ref={cameraRef}
+        defaultSettings={
+          bounds
+            ? { bounds: { ne: bounds.ne, sw: bounds.sw, paddingTop: 50, paddingBottom: 50, paddingLeft: 50, paddingRight: 50 } }
+            : { centerCoordinate: center, zoomLevel: DEFAULT_ZOOM }
+        }
       />
+
       {originCoord && (
-        <Marker coordinate={originCoord} pinColor="green" title="Origen" />
+        <MapLibreGL.MarkerView coordinate={originCoord}>
+          <View style={[styles.marker, { backgroundColor: '#4caf50' }]}>
+            <View style={styles.markerInner} />
+          </View>
+        </MapLibreGL.MarkerView>
       )}
+
       {destCoord && (
-        <Marker coordinate={destCoord} pinColor="red" title="Destino" />
+        <MapLibreGL.MarkerView coordinate={destCoord}>
+          <View style={[styles.marker, { backgroundColor: '#f44336' }]}>
+            <View style={styles.markerInner} />
+          </View>
+        </MapLibreGL.MarkerView>
       )}
+
       {currentCoord && (
-        <Marker coordinate={currentCoord} pinColor="blue" title="Ubicación actual" />
+        <MapLibreGL.MarkerView coordinate={currentCoord}>
+          <View style={[styles.marker, { backgroundColor: '#2196f3' }]}>
+            <View style={styles.markerInner} />
+          </View>
+        </MapLibreGL.MarkerView>
       )}
-    </MapView>
+    </MapLibreGL.MapView>
   );
 }
 
@@ -64,5 +86,21 @@ const styles = StyleSheet.create({
   map: {
     height: 250,
     width: '100%',
+  },
+  marker: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    elevation: 3,
+  },
+  markerInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ffffff',
   },
 });

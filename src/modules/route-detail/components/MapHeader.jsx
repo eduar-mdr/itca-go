@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 const toLatLng = (geoPoint) => {
   if (!geoPoint?.coordinates || geoPoint.coordinates.length < 2) return null;
@@ -13,6 +13,10 @@ const DEFAULT_REGION = {
   latitudeDelta: 0.05,
   longitudeDelta: 0.05,
 };
+
+const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
+// Estilo 'streets-v2' (calles detalladas). También puedes usar 'basic-v2' o 'dataviz'
+const MAPTILER_URL = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
 
 export default function MapHeader({ originLocation, destinationLocation, currentLocation }) {
   const mapRef = useRef(null);
@@ -36,7 +40,13 @@ export default function MapHeader({ originLocation, destinationLocation, current
     : DEFAULT_REGION;
 
   return (
-    <MapView ref={mapRef} style={styles.map} initialRegion={initialRegion} showsUserLocation>
+    <MapView ref={mapRef} style={styles.map} initialRegion={initialRegion} showsUserLocation mapType="none">
+      <UrlTile
+        urlTemplate={MAPTILER_URL}
+        maximumZ={19}
+        flipY={false}
+        shouldReplaceMapContent={true}
+      />
       {originCoord && (
         <Marker coordinate={originCoord} pinColor="green" title="Origen" />
       )}

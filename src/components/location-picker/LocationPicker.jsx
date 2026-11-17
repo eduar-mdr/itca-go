@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import MapView from 'react-native-maps';
+import MapView, { UrlTile } from 'react-native-maps';
 import Button from '../button/Button';
 import { lightTheme, spacing, borderRadius, fontSize } from '../../styles/theme';
+
+const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
+const MAPTILER_URL = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
 
 const DEFAULT_REGION = { latitude: 13.6929, longitude: -89.2182, latitudeDelta: 0.02, longitudeDelta: 0.02 };
 
@@ -62,6 +65,13 @@ export default function LocationPicker({ label = 'Seleccionar ubicación', value
               style={styles.map}
               initialRegion={region}
               onRegionChangeComplete={setRegion}
+              mapType="none"
+            />
+            <UrlTile
+              urlTemplate={MAPTILER_URL}
+              maximumZ={19}
+              flipY={false}
+              shouldReplaceMapContent={true}
             />
             <View style={styles.markerFixed}>
               <View style={[styles.markerDot, { backgroundColor: theme.accent }]} />

@@ -1,15 +1,19 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, UrlTile } from 'react-native-maps';
 import { Text } from 'react-native';
 import { useTheme } from '../../../context/ThemeContext';
 
 const DEFAULT_REGION = {
-  latitude: 13.6929,
-  longitude: -89.2182,
+  latitude: 13.6769,
+  longitude: -89.2796,
   latitudeDelta: 0.05,
   longitudeDelta: 0.05,
 };
+
+const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
+// Estilo 'streets-v2' (calles detalladas). También puedes usar 'basic-v2' o 'dataviz'
+const MAPTILER_URL = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
 
 const toLatLng = (geoPoint) => {
   if (!geoPoint?.coordinates || geoPoint.coordinates.length < 2) return null;
@@ -23,7 +27,13 @@ export default function MapBackground({ routes = [], trips = [], userLocation, o
     : DEFAULT_REGION;
 
   return (
-    <MapView style={styles.map} initialRegion={region} showsUserLocation>
+    <MapView style={styles.map} initialRegion={region} showsUserLocation mapType="none">
+      <UrlTile
+        urlTemplate={MAPTILER_URL}
+        maximumZ={19}
+        flipY={false}
+        shouldReplaceMapContent={true}
+      />
       {routes.map((route) => {
         const coord = toLatLng(route.currentLocation) || toLatLng(route.originLocation);
         if (!coord) return null;

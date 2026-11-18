@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import MapHeader from '../components/MapHeader';
@@ -29,6 +29,8 @@ export default function TripDetailScreen() {
   const { comments, sendComment, loading: commentsLoading } = useComments(id, 'trip');
   const { subscribe, unsubscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'trip', item);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [mapTouchActive, setMapTouchActive] = useState(false);
+  const scrollRef = useRef(null);
 
   const statusLabels = {
     available: { text: 'Disponible', bg: '#4caf50' },
@@ -51,17 +53,38 @@ export default function TripDetailScreen() {
   const passengers = item.passengers || [];
   const statusInfo = statusLabels[item.status] || statusLabels.available;
 
+  const handleSendComment = (text) => {
+    sendComment(text);
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 300);
+  };
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 30}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <MapHeader
-          originLocation={item.originLocation}
-          destinationLocation={item.destinationLocation}
-        />
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={!mapTouchActive}
+        nestedScrollEnabled={true}
+      >
+        <View
+          onTouchStart={() => setMapTouchActive(true)}
+          onTouchEnd={() => setMapTouchActive(false)}
+          onTouchCancel={() => setMapTouchActive(false)}
+        >
+          <MapHeader
+            originLocation={item.originLocation}
+            destinationLocation={item.destinationLocation}
+            originLabel={item.origin}
+            destinationLabel={item.destination}
+          />
+        </View>
 
         <Card style={styles.infoCard} theme={theme}>
           <View style={styles.headerRow}>
@@ -97,7 +120,7 @@ export default function TripDetailScreen() {
 
         <DiscussionSection
           comments={comments}
-          onSendComment={sendComment}
+          onSendComment={handleSendComment}
           loading={commentsLoading}
           theme={theme}
         />

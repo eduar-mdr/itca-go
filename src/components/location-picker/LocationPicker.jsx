@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import MapLibreGL from '@maplibre/maplibre-react-native';
+import { Map, Camera } from '@maplibre/maplibre-react-native';
 import Button from '../button/Button';
 import { lightTheme, spacing, borderRadius, fontSize } from '../../styles/theme';
 
@@ -8,7 +8,6 @@ const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
 const STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
 const DEFAULT_CENTER = [-89.2182, 13.6929];
-const DEFAULT_ZOOM = 14;
 
 export default function LocationPicker({ label = 'Seleccionar ubicación', value, onChange, theme = lightTheme }) {
   const [open, setOpen] = useState(false);
@@ -26,9 +25,11 @@ export default function LocationPicker({ label = 'Seleccionar ubicación', value
     setOpen(true);
   };
 
-  const handleRegionChange = (feature) => {
-    const coords = feature.geometry.coordinates;
-    selectedCoord.current = coords;
+  const handleRegionChange = (event) => {
+    const center = event?.nativeEvent?.center;
+    if (center) {
+      selectedCoord.current = center;
+    }
   };
 
   const handleConfirm = () => {
@@ -64,15 +65,13 @@ export default function LocationPicker({ label = 'Seleccionar ubicación', value
           />
 
           <View style={styles.mapWrapper}>
-            <MapLibreGL.MapView
+            <Map
               style={styles.map}
-              styleURL={STYLE_URL}
+              mapStyle={STYLE_URL}
               onRegionDidChange={handleRegionChange}
             >
-              <MapLibreGL.Camera
-                defaultSettings={{ centerCoordinate: center, zoomLevel: DEFAULT_ZOOM }}
-              />
-            </MapLibreGL.MapView>
+              <Camera initialViewState={{ center, zoom: 14 }} />
+            </Map>
 
             <View style={styles.markerFixed}>
               <View style={[styles.markerDot, { backgroundColor: theme.accent }]} />

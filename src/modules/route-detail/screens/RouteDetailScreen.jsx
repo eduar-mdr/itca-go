@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSelector } from 'react-redux';
 import MapHeader from '../components/MapHeader';
@@ -31,6 +31,8 @@ export default function RouteDetailScreen() {
   const { subscribe, unsubscribe, loading: subLoading, isSubscribed } = useSubscription(id, 'route', item);
   const { isTracking, startTracking, stopTracking, loading: trackingLoading } = useRouteTracking(id);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [mapTouchActive, setMapTouchActive] = useState(false);
+  const scrollRef = useRef(null);
 
   if (loading || !item) {
     return (
@@ -45,18 +47,39 @@ export default function RouteDetailScreen() {
   const isOwner = item.assignedDriver && (item.assignedDriver._id === userId || item.assignedDriver === userId);
   const statusInfo = ROUTE_STATUS_LABELS[item.status] || ROUTE_STATUS_LABELS.idle;
 
+  const handleSendComment = (text) => {
+    sendComment(text);
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 300);
+  };
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 30}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <MapHeader
-          originLocation={item.originLocation}
-          destinationLocation={item.destinationLocation}
-          currentLocation={realtimeLocation || item.currentLocation}
-        />
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={!mapTouchActive}
+        nestedScrollEnabled={true}
+      >
+        <View
+          onTouchStart={() => setMapTouchActive(true)}
+          onTouchEnd={() => setMapTouchActive(false)}
+          onTouchCancel={() => setMapTouchActive(false)}
+        >
+          <MapHeader
+            originLocation={item.originLocation}
+            destinationLocation={item.destinationLocation}
+            currentLocation={realtimeLocation || item.currentLocation}
+            originLabel={item.origin}
+            destinationLabel={item.destination}
+          />
+        </View>
 
         <Card style={styles.infoCard} theme={theme}>
           <View style={styles.nameRow}>
@@ -90,7 +113,7 @@ export default function RouteDetailScreen() {
 
         <DiscussionSection
           comments={comments}
-          onSendComment={sendComment}
+          onSendComment={handleSendComment}
           loading={commentsLoading}
           theme={theme}
         />

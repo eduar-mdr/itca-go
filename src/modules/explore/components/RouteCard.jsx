@@ -19,7 +19,7 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('es-SV', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
 
-export default function RouteCard({ item, type, onPress }) {
+const RouteCard = React.memo(function RouteCard({ item, type, onPress }) {
   const { theme } = useTheme();
 
   const statusColors = {
@@ -70,7 +70,9 @@ export default function RouteCard({ item, type, onPress }) {
       </Card>
     </TouchableOpacity>
   );
-}
+});
+
+export default RouteCard;
 
 const styles = StyleSheet.create({
   card: {

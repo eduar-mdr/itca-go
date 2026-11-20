@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, RefreshControl, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -28,7 +28,7 @@ export default function ExploreScreen() {
     if (created) refresh();
   };
 
-  const getListData = useCallback(() => {
+  const listData = useMemo(() => {
     const routeItems = routes.map((r) => ({ ...r, _type: 'route' }));
     const tripItems = trips.map((t) => ({ ...t, _type: 'trip' }));
 
@@ -37,15 +37,21 @@ export default function ExploreScreen() {
     return [...routeItems, ...tripItems];
   }, [routes, trips, filter]);
 
-  const handleCardPress = (item, type) => {
+  const handleCardPress = useCallback((item, type) => {
     if (type === 'route') {
       router.push(`/route-detail/${item._id}`);
     } else {
       router.push(`/trip-detail/${item._id}`);
     }
-  };
+  }, [router]);
 
-  const listData = getListData();
+  const renderItem = useCallback(({ item }) => (
+    <RouteCard
+      item={item}
+      type={item._type}
+      onPress={() => handleCardPress(item, item._type)}
+    />
+  ), [handleCardPress]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -81,13 +87,7 @@ export default function ExploreScreen() {
         <FlatList
           data={listData}
           keyExtractor={(item) => `${item._type}-${item._id}`}
-          renderItem={({ item }) => (
-            <RouteCard
-              item={item}
-              type={item._type}
-              onPress={() => handleCardPress(item, item._type)}
-            />
-          )}
+          renderItem={renderItem}
           contentContainerStyle={styles.list}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={refresh} colors={[theme.primary]} />
